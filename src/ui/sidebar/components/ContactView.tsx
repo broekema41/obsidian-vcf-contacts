@@ -71,6 +71,7 @@ export const ContactView = (props: ContactProps) => {
 	}
 
 	const renderFirstAdress = (prefix: string[], values: any) => {
+		const safe = (val: any) => val != null ? String(val).trim() : '';
 		for (let i = 0; i < prefix.length; i++) {
 			const pre = prefix[i];
 			if (values[`${pre}.STREET`]) {
@@ -79,7 +80,7 @@ export const ContactView = (props: ContactProps) => {
 						values[`${pre}.PO`],
 						values[`${pre}.STREET`],
 						values[`${pre}.EXT`],
-						values[`${pre}.POSTAL`],
+						safe(values[`${pre}.POSTAL`]),
 						values[`${pre}.LOCALITY`],
 						values[`${pre}.REGION`],
 						values[`${pre}.COUNTRY`]
@@ -95,10 +96,10 @@ export const ContactView = (props: ContactProps) => {
 									.join(' ')}
 							</div>
 						)}
-						{(values[`${pre}.POSTAL`] || values[`${pre}.LOCALITY`]) && (
+						{(safe(values[`${pre}.POSTAL`]) || values[`${pre}.LOCALITY`]) && (
 							<div>
 								{[
-									values[`${pre}.POSTAL`],
+									safe(values[`${pre}.POSTAL`]),
 									values[`${pre}.LOCALITY`],
 								]
 									.filter(part => part && part.trim())
