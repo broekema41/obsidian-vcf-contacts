@@ -351,6 +351,19 @@ npm run test:coverage
 For a breakdown of our testing approach, structure, and goals, see:
 👉 [our testing strategy](assets/docs/testing-strategy.md)
 
+
+
+
+---
+
+## 🌟 Support & Get Involved
+
+We rely on our community to keep this project free and moving forward. If you believe in what we’re building, now’s the perfect time to step out of the shadows and help shape the future of this plugin!
+
+Spread the word, connect us with sponsors, or simply share your enthusiasm, your support matters.
+
+Ready to make a difference? [Sign up here.](https://tally.so/r/mR6rKj)
+
 ---
 
 <!-- TOC --><a name="-acknowledgements"></a>
@@ -358,5 +371,5 @@ For a breakdown of our testing approach, structure, and goals, see:
 
 This plugin started as a fork of **Vadim Beskrovnov’s Contacts plugin**. While the codebase has since evolved significantly, his original work laid the foundation. Immense thanks to Vadim for the early inspiration and groundwork.
 
----
 
+---

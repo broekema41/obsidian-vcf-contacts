@@ -44,7 +44,7 @@ export const UidProcessor: InsightProcessor = {
   settingDefaultValue: true,
 
   async process(contact:Contact): Promise<InsightQueItem | undefined> {
-    const activeProcessor = getSettings()[`${this.settingPropertyName}`] as boolean;
+    const activeProcessor = getSettings().processors[`${this.settingPropertyName}`] as boolean;
     if (!activeProcessor || contact.data['UID']) {
       return Promise.resolve(undefined);
     }

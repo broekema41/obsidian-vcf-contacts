@@ -12,7 +12,17 @@ import { afterEach,describe, expect, it, vi } from 'vitest';
 const mockSettings: ContactsPluginSettings = {
   contactsFolder: 'Contacts',
   defaultHashtag: '',
-  enableSync: true,
+  processors: {
+    someRandomProcessor: true,
+  },
+  syncSelected: 'None',
+  CardDAV: {
+    addressBookUrl: '',
+    syncEnabled: false,
+    syncInterval: 900,
+    authKey: '',
+    authType: 'apikey'
+  }
 };
 
 describe('sharedSppContext', () => {

@@ -1,4 +1,6 @@
 import { VCardMeta, VCardRaw } from "src/sync/adapters/adapter";
+import { CarddavSettingsInterface } from "src/ui/settings/components/carddavSettings";
+import { AppHttpResponse } from "src/util/platformHttpClient";
 
 export interface AdapterInterface {
   /**
@@ -25,7 +27,7 @@ export interface AdapterInterface {
    * Check if the remote party is reachable with current settings.
    * @returns Promise resolving to true if connection succeeds, false otherwise
    */
-  checkConnectivity(): Promise<boolean>;
+  checkConnectivity(settings: CarddavSettingsInterface): Promise<AppHttpResponse>
 }
 
 

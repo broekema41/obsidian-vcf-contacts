@@ -1,23 +1,11 @@
 import { App, PluginSettingTab } from "obsidian";
 import * as React from "react";
 import { createRoot, Root } from "react-dom/client";
-import { insightService } from "src/insights/insightService";
 import ContactsPlugin from "src/main";
-import { ContactsPluginSettings } from "src/settings/settings"
 import { InsightSettings } from "src/ui/settings/components/insightsSettings";
 import { MasterSetting } from "src/ui/settings/components/masterSettings";
+import { SynchronizationSettings } from "src/ui/settings/components/synchronizationSettings";
 
-const insightsSetting = insightService.settings();
-const insightsSettingDefaults = insightsSetting.reduce((acc:Record<string, string|boolean>, setting) => {
-  acc[setting.settingPropertyName] = setting.settingDefaultValue;
-  return acc;
-}, {} as Record<string, string>);
-
-export const DEFAULT_SETTINGS: ContactsPluginSettings = {
-  contactsFolder: '',
-  defaultHashtag: '',
-  ...insightsSettingDefaults
-}
 
 export class ContactsSettingTab extends PluginSettingTab {
   plugin: ContactsPlugin;
@@ -43,9 +31,11 @@ export class ContactsSettingTab extends PluginSettingTab {
         />
         <InsightSettings
           plugin={this.plugin}
-          insightsSetting={insightsSetting}
         />
-
+        <SynchronizationSettings
+          app={this.app}
+          plugin={this.plugin}
+        />
       </>
     );
   }

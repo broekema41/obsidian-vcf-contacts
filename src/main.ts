@@ -1,7 +1,8 @@
 import "src/insights/insightLoading";
 
 import { Plugin } from 'obsidian';
-import { ContactsSettingTab, DEFAULT_SETTINGS } from 'src/ui/settings/settingsView';
+import { DEFAULT_SETTINGS } from "src/settings/setting";
+import { ContactsSettingTab } from 'src/ui/settings/settingsView';
 import { ContactsView } from "src/ui/sidebar/sidebarView";
 import { CONTACTS_VIEW_CONFIG } from "src/util/constants";
 import myScrollTo from "src/util/myScrollTo";
