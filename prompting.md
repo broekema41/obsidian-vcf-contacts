@@ -28,3 +28,4 @@ While the book doesn’t define a testing method, it strongly influences how we 
 - **Example:**  
   - Move validation, data transformation, and API interaction logic from UI components to `settings.ts` or a dedicated service module.
   - UI components should only call functions from these modules and display results.
+

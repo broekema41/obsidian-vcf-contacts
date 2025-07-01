@@ -2,18 +2,9 @@ import * as React from "react";
 import { Contact, updateFrontMatterValue } from "src/contacts";
 import { getSettings } from "src/context/sharedSettingsContext";
 import { InsightProcessor, InsightQueItem, RunType } from "src/insights/insight.d";
+import { generateUUID } from "src/util/vcard";
 
-// Zero dependency uuid generator as its not used for millions of records
-const generateUUID = (): string => {
-  const timestamp = Date.now().toString(16).padStart(12, '0');
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  }).replace(/^(.{24})/, (_, p1) => {
-    return timestamp + p1.slice(timestamp.length);
-  });
-}
+
 
 const renderGroup = (queItems: InsightQueItem[]):JSX.Element => {
   return (

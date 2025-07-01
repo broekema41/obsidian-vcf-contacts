@@ -52,7 +52,7 @@ function extractSubkey(input: string): { main: string; subkey?: string } {
  * Otherwise, it assumes the content is a type.
  */
 function parseBracketContent(content: string): { index?: string; type?: string } {
-	if (content.includes(':')) {
+  if (content.includes(':')) {
 		const [index, type] = content.split(':');
 		return { index, type };
 	}
@@ -81,7 +81,6 @@ function parseKeyPart(main: string): { key: string; index?: string; type?: strin
 	// Extract and parse the content within the brackets.
 	const bracketContent = main.substring(openBracketIndex + 1, closeBracketIndex);
 	const { index, type } = parseBracketContent(bracketContent);
-
 	return { key, index, type };
 }
 

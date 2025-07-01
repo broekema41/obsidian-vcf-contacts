@@ -1,6 +1,6 @@
 export interface AppHttpRequest {
   url: string;
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS';
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PROPFIND' | 'REPORT';
   headers?: Record<string, string>;
   body?: any;
 }

@@ -51,8 +51,6 @@ function generateVCard(file: TFile): string {
   const singleLineFields: Array<[string, string]> = [];
   const structuredFields: Array<[string, string]> = [];
 
-  singleLineFields.push(['FN', file.basename]);
-
   entries.forEach(([key, value]) => {
     const keyObj = parseKey(key);
 
@@ -62,6 +60,10 @@ function generateVCard(file: TFile): string {
       singleLineFields.push([key, value]);
     }
   });
+  
+  if (!singleLineFields.some(([key]) => key === 'FN')) {
+    singleLineFields.push(['FN', file.basename]);
+  }
 
   const structuredLines = renderStructuredLines(structuredFields);
   const singleLines = singleLineFields.map(renderSingleKey);

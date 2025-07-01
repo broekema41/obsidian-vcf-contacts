@@ -1,12 +1,12 @@
 export interface VCardRaw {
-  uid: string;
-  raw: string;         // The raw VCF data
-  // Optionally add parsed fields if desired (name, email, etc)
+  uid: string | undefined;
+  raw: string; // The raw VCF data
 }
 
 export interface VCardMeta {
-  uid: string;
-  name?: string;
-  lastModified: string; // ISO string, always present
-  // Optionally more metadata (e.g., email, phone, photo presence, etc)
+  href: string;
+  etag: string;
+  lastModified: Date;
+  uid: string | undefined;
+  fn: string | undefined;
 }

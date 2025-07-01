@@ -3,6 +3,7 @@ import * as React from "react";
 import { Contact, parseKey } from "src/contacts";
 import { getApp } from "src/context/sharedAppContext";
 import { fileId, openFile } from "src/file/file";
+import { sync } from "src/sync";
 import Avatar from "src/ui/sidebar/components/Avatar";
 import { CopyableItem } from "src/ui/sidebar/components/CopyableItem";
 
@@ -243,6 +244,20 @@ export const ContactView = (props: ContactProps) => {
                 }}
 							>
 							</div>
+              <div
+                data-icon="refresh-ccw-dot"
+                className={
+                  "clickable-icon nav-action-button "
+                }
+                aria-label="Sync"
+                ref={(element) => (buttons.current[2] = element)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  sync.do();
+                  // sync.singlePush(contact.file);
+                }}
+              >
+              </div>
 						</div>
 					</div>
 				</div>

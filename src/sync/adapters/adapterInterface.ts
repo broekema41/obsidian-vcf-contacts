@@ -15,13 +15,19 @@ export interface AdapterInterface {
    * @param uid The unique identifier of the vCard to pull
    * @returns Promise resolving to the vCard (or null if not found)
    */
-  pull(uid: string): Promise<VCardRaw | undefined>;
+  pull(href: string): Promise<VCardRaw | undefined>;
 
   /**
    * Get a list of all vCard metadata (UID, name, lastModified, etc).
    * @returns Promise resolving to an array of vCard metadata objects
    */
-  getList(): Promise<VCardMeta[]>;
+  getMetaList(): Promise<VCardMeta[]>;
+
+  /**
+   * Get a vCard metadata (UID, name, lastModified, etc).
+   * @returns Promise resolving to an array of vCard metadata objects
+   */
+  getMetaByUid(uid: string): Promise<VCardMeta|undefined>;
 
   /**
    * Check if the remote party is reachable with current settings.
