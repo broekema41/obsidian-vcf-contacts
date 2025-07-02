@@ -253,8 +253,7 @@ export const ContactView = (props: ContactProps) => {
                 ref={(element) => (buttons.current[2] = element)}
                 onClick={(event) => {
                   event.stopPropagation();
-                  sync.do();
-                  // sync.singlePush(contact.file);
+                  sync.syncContact(contact);
                 }}
               >
               </div>

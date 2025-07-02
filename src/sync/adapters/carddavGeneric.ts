@@ -2,14 +2,12 @@ import { getSettings } from "src/context/sharedSettingsContext";
 import { ContactsPluginSettings } from "src/settings/settings";
 import { VCardMeta, VCardRaw } from "src/sync/adapters/adapter";
 import { AdapterInterface } from "src/sync/adapters/adapterInterface";
-import { getList } from "src/sync/singlePull";
 import { CarddavSettingsInterface } from "src/ui/settings/components/carddavSettings";
 import { AppHttpResponse, PlatformHttpClient } from "src/util/platformHttpClient";
 import { fnOutOfString, uidOutOfString } from "src/util/vcard";
 
 
 export function carddavGenericAdapter(): AdapterInterface {
-
 
   const getAuthHeader = (settings:ContactsPluginSettings) => {
     if (settings.CardDAV.authType === 'apikey') {
@@ -87,6 +85,11 @@ export function carddavGenericAdapter(): AdapterInterface {
     }
 
     const response = responses[0];
+
+    if (!isVcfNode(response)) {
+      return;
+    }
+
     const href = response.querySelector('href')?.textContent || '';
     const etag = response.querySelector('getetag')?.textContent || '';
     const lastModified = response.querySelector('getlastmodified')?.textContent || '';
@@ -172,6 +175,8 @@ export function carddavGenericAdapter(): AdapterInterface {
         fn: fnOutOfString(adressData)
       });
     });
+
+    console.log(vcardMetas);
     return vcardMetas;
   }
 
@@ -215,7 +220,6 @@ export function carddavGenericAdapter(): AdapterInterface {
   }
 
   return {
-
     checkConnectivity,
     getMetaByUid,
     getMetaList,

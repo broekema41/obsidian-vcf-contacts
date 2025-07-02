@@ -1,8 +1,8 @@
 import * as React from "react";
-import { Contact, updateFrontMatterValue } from "src/contacts";
+import { Contact } from "src/contacts";
 import { getSettings } from "src/context/sharedSettingsContext";
 import { InsightProcessor, InsightQueItem, RunType } from "src/insights/insight.d";
-import { generateUUID } from "src/util/vcard";
+
 
 const renderGroup = (queItems: InsightQueItem[]):JSX.Element => {
   return (
@@ -25,33 +25,22 @@ const render = (queItem: InsightQueItem):JSX.Element => {
   );
 }
 
-export const UidProcessor: InsightProcessor = {
-  name: "UidProcessor",
-  runType: RunType.IMMEDIATELY,
-  settingPropertyName: 'UidProcessor',
-  settingDescription: 'Generates a unique identifier for contact when missing.',
+export const SyncUnknownProcessor: InsightProcessor = {
+  name: "SyncUnknownProcessor",
+  runType: RunType.BATCH,
+  settingPropertyName: 'SyncUnknownProcessor',
+  settingDescription: 'query the configured remote contact server and allow you to decide to delete or import ',
   settingDefaultValue: true,
 
-  async process(contact:Contact): Promise<InsightQueItem | undefined> {
+  async process(contacts:Contact[]): Promise<InsightQueItem[] | undefined> {
     const activeProcessor = getSettings().processors[`${this.settingPropertyName}`] as boolean;
-    if (!activeProcessor || contact.data['UID']) {
+    if (!activeProcessor ) {
       return Promise.resolve(undefined);
     }
 
-    const UUID = `urn:uuid:${generateUUID()}`
-    await updateFrontMatterValue(contact.file, 'UID', UUID)
+    console.log(contacts);
 
-    return Promise.resolve({
-      name: this.name,
-      runType: this.runType,
-      file: contact.file,
-      message: `Generated Unique user identifier for Contact ${contact.file.name}.`,
-      render,
-      renderGroup
-    });
+    return Promise.resolve(undefined);
   },
 
 };
-
-
-

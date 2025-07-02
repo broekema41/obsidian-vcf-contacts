@@ -28,6 +28,7 @@ export const InsightsView = (props: ActionProps) => {
   const writeTimerRef = useRef<number | null>(null);
   const [contacts] = useState(() => props.processContacts);
   const [immediateResults, setImmediateResults] = useState<Map<string, InsightQueItem[]>>(new Map());
+  const [batchResults, setBatchResults] = useState<Map<string, InsightQueItem[]>>(new Map());
 
   useEffect(() => {
     if(loading) {
@@ -57,14 +58,17 @@ export const InsightsView = (props: ActionProps) => {
       try {
         setWriting(true);
         const immediateResults = await insightService.process(contacts, RunType.IMMEDIATELY);
+        const batchResults = await insightService.process(contacts, RunType.BATCH);
 
-        if (immediateResults.length === 0) {
+        if (immediateResults.length === 0 && batchResults.length === 0) {
           setWriting(false);
           setLoading(false);
         }
 
-        setLoading(false);
+
         setImmediateResults(groupByProcessorNameMap(immediateResults))
+        setBatchResults(groupByProcessorNameMap(batchResults))
+        setLoading(false);
 
       } catch (e) {
         console.error('error loading insights', e);
@@ -92,20 +96,39 @@ export const InsightsView = (props: ActionProps) => {
       )}
 
 
-{
-  !loading ? (
-    Array.from(immediateResults.entries()).length === 0 ? (
-            <div className="action-card">
-              <div className="action-card-content action-card-content--no-height">
-                <p>No insights available.</p>
-              </div>
-            </div>
-        ) : (
-          Array.from(immediateResults.entries()).map(([key, insights]) => (
-            insights[0].renderGroup(insights)
-          ))
-        )
-      ) : null}
+      {
+        !loading ? (
+          Array.from(immediateResults.entries()).length === 0 && Array.from(batchResults.entries()).length === 0 ? (
+                  <div className="action-card">
+                    <div className="action-card-content action-card-content--no-height">
+                      <p>No insights available.</p>
+                    </div>
+                  </div>
+              ) : null
+        ) : null
+      }
+
+      {
+        !loading ? (
+          Array.from(immediateResults.entries()).length > 0 ? (
+            Array.from(immediateResults.entries()).map(([key, insights]) => (
+              insights[0].renderGroup(insights)
+            ))
+          ) : null
+        ) : null
+      }
+
+      {
+        !loading ? (
+          Array.from(immediateResults.entries()).length > 0 ? (
+            Array.from(immediateResults.entries()).map(([key, insights]) => (
+              insights.map(insight => (
+                insight.render(insight)
+              ))
+            ))
+          ) : null
+        ) : null
+      }
 
       {/*<div className="action-card">*/}
       {/*  <div className="action-card-content action-card-content--no-height">*/}

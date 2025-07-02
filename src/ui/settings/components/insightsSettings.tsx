@@ -16,9 +16,10 @@ export function InsightSettings({ plugin }: InsightSettingsProps) {
   React.useEffect(() => {
     if (containerRef.current) {
       insightsSetting.forEach((settingProps :InsighSettingProperties) => {
+        console.log(settingProps);
         const settingKey = settingProps.settingPropertyName;
         const currentValue = plugin.settings.processors[settingKey];
-
+        console.log(currentValue, settingKey);
         if (typeof currentValue === 'boolean' && containerRef.current) {
           new Setting(containerRef.current)
             .setName(settingProps.name)

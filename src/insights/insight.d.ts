@@ -16,7 +16,7 @@ export interface InsightProcessor {
   settingPropertyName: string;
   settingDescription: string;
   settingDefaultValue: boolean;
-  process(contact: Contact): Promise<InsightQueItem | undefined>;
+  process(contact: Contact|Contact[]): Promise<InsightQueItem | InsightQueItem[] |  undefined>;
 }
 
 
@@ -30,6 +30,6 @@ export interface InsighSettingProperties {
 
 export enum RunType {
   IMMEDIATELY = 'immediately',
-  UPCOMMING = 'upcoming',
   INPROVEMENT = 'inprovement',
+  BATCH = 'batch',
 }

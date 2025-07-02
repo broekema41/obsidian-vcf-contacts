@@ -31,7 +31,20 @@ export default class ContactsPlugin extends Plugin {
 	onunload() {}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    // Decided to explicitly merge the settings for now to prevent a deep clone function
+    const loaded = await this.loadData() ?? {};
+    this.settings = {
+      ...DEFAULT_SETTINGS,
+      ...loaded,
+      CardDAV: {
+        ...DEFAULT_SETTINGS.CardDAV,
+        ...(loaded.CardDAV ?? {})
+      },
+      processors: {
+        ...DEFAULT_SETTINGS.processors,
+        ...(loaded.processors ?? {})
+      }
+    };
 	}
 
 	async saveSettings() {
