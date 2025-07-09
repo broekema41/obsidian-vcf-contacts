@@ -1,12 +1,14 @@
+import { effect } from "@preact/signals-core";
 import { App } from "obsidian";
 import { clearApp,getApp, setApp } from 'src/context/sharedAppContext'
 import {
   clearSettings,
   getSettings,
-  onSettingsChange,
+  settings,
   setSettings,
 } from 'src/context/sharedSettingsContext';
 import type { ContactsPluginSettings } from 'src/settings/settings.d';
+import { sync } from "src/sync";
 import { afterEach,describe, expect, it, vi } from 'vitest';
 
 const mockSettings: ContactsPluginSettings = {
@@ -15,10 +17,10 @@ const mockSettings: ContactsPluginSettings = {
   processors: {
     someRandomProcessor: true,
   },
+  syncEnabled: false,
   syncSelected: 'None',
   CardDAV: {
     addressBookUrl: '',
-    syncEnabled: false,
     syncInterval: 900,
     authKey: '',
     authType: 'apikey'
@@ -48,7 +50,7 @@ describe('sharedSettingsContext', () => {
   it('stores and retrieves the settings', () => {
     setSettings(mockSettings);
     const retrieved = getSettings();
-    expect(retrieved).toBe(mockSettings);
+    expect(retrieved).to.deep.equal(mockSettings);
   });
 
   it('throws if settings are not set', () => {
@@ -56,17 +58,28 @@ describe('sharedSettingsContext', () => {
   });
 
   it('calls listeners when settings are updated', () => {
+
     const listener = vi.fn();
-    onSettingsChange(listener);
+    const unsubscribe = effect(() => {
+      if (settings.value !== undefined) {
+        listener(settings.value);
+      }
+
+    });
 
     setSettings(mockSettings);
     expect(listener).toHaveBeenCalledTimes(1);
     expect(listener).toHaveBeenCalledWith(mockSettings);
+    unsubscribe();
   });
 
   it('removes listener when unsubscribe is called', () => {
     const listener = vi.fn();
-    const unsubscribe = onSettingsChange(listener);
+    const unsubscribe = effect(() => {
+      if (settings.value !== undefined) {
+        listener(settings.value);
+      }
+    });
 
     unsubscribe();
     setSettings(mockSettings);
@@ -75,13 +88,17 @@ describe('sharedSettingsContext', () => {
 
   it('clears listeners and settings', () => {
     const listener = vi.fn();
-    onSettingsChange(listener);
+    const unsubscribe = effect(() => {
+        listener(settings.value);
+    });
 
     setSettings(mockSettings);
+    expect(listener).toHaveBeenCalledTimes(2);
+    expect(listener).toHaveBeenCalledWith(mockSettings);
     clearSettings();
-
     expect(() => getSettings()).toThrow();
-    setSettings(mockSettings);
-    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalledTimes(3);
+    expect(listener).toHaveBeenCalledWith(undefined);
+    unsubscribe();
   });
 });

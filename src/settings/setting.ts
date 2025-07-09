@@ -12,9 +12,9 @@ export const DEFAULT_SETTINGS: ContactsPluginSettings = {
   defaultHashtag: '',
   processors: insightsSettingDefaults,
   syncSelected: 'None',
+  syncEnabled: false,
   CardDAV: {
     addressBookUrl: '',
-    syncEnabled: false,
     syncInterval: 900,
     authKey: '',
     authType: 'apikey'

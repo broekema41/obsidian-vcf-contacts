@@ -1,5 +1,6 @@
-import { App, Setting } from "obsidian";
+import { App } from "obsidian";
 import * as React from "react";
+import { setSettings } from "src/context/sharedSettingsContext";
 import ContactsPlugin from "src/main";
 import { SyncSelected } from "src/settings/settings";
 import { carddavGenericAdapter } from "src/sync/adapters/carddavGeneric";
@@ -21,7 +22,7 @@ const initCardavSettings = {
 export function SynchronizationSettings({plugin, app}: SynchronizationSettingsProps) {
 
   const [warning, setWarning] = React.useState('');
-  const [syncEnabled, setSyncEnabled] = React.useState<boolean>(plugin.settings.CardDAV.syncEnabled);
+  const [syncEnabled, setSyncEnabled] = React.useState<boolean>(plugin.settings.syncEnabled);
   const [syncSelected, setSyncSelected] = React.useState<SyncSelected>(plugin.settings.syncSelected);
   const [carddavSettings, setCarddavSettings] = React.useState({
     ...initCardavSettings,
@@ -45,9 +46,9 @@ export function SynchronizationSettings({plugin, app}: SynchronizationSettingsPr
         return;
       }
 
+      plugin.settings.syncEnabled = true;
       plugin.settings.CardDAV = {
         addressBookUrl: carddavSettings.addressBookUrl,
-        syncEnabled: true,
         syncInterval: 900,
         authType: carddavSettings.authKey ? 'apikey' : 'basic',
         authKey: carddavSettings.authKey ? carddavSettings.authKey : btoa(`${carddavSettings.username}:${carddavSettings.password}`)
@@ -59,16 +60,18 @@ export function SynchronizationSettings({plugin, app}: SynchronizationSettingsPr
       setSyncEnabled(true);
       setWarning('');
       await plugin.saveSettings();
+      setSettings(plugin.settings);
     } catch (err: any) {
       setWarning(`failed to enable connection! ${err?.message || err || 'Unknown error'}.`);
     }
   };
 
   const disableSync = () => {
-    plugin.settings.CardDAV.syncEnabled = false;
+    plugin.settings.syncEnabled = false;
     plugin.saveSettings();
     setSyncEnabled(false);
     setSyncSelected('None');
+    setSettings(plugin.settings);
   }
 
   // React.useEffect(() => {

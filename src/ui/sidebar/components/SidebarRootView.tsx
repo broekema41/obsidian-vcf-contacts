@@ -1,9 +1,10 @@
+import { effect } from "@preact/signals-core";
 import { MarkdownView, normalizePath, Notice, TFile, TFolder } from "obsidian";
 import * as React from "react";
 import { Contact, getFrontmatterFromFiles, mdRender } from "src/contacts";
 import { vcard } from "src/contacts/vcard";
 import { getApp } from "src/context/sharedAppContext";
-import { getSettings, onSettingsChange } from "src/context/sharedSettingsContext";
+import { getSettings, settings } from "src/context/sharedSettingsContext";
 import {
   createContactFile,
   createFileName,
@@ -28,11 +29,11 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
   const [contacts, setContacts] = React.useState<Contact[]>([]);
   const [displayInsightsView, setDisplayInsightsView] = React.useState<boolean>(false);
 	const [sort, setSort] = React.useState<Sort>(Sort.NAME);
-	let settings = getSettings();
+	let mySettings = getSettings();
 
 	const parseContacts = () => {
 		const contactsFolder = vault.getAbstractFileByPath(
-			normalizePath(settings.contactsFolder)
+			normalizePath(mySettings.contactsFolder)
 		)
 
 		if (!(contactsFolder instanceof TFolder)) {
@@ -48,13 +49,15 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
 
 	React.useEffect(() => {
 		parseContacts();
-    const offSettings = onSettingsChange(() => {
-      settings = getSettings();
-      parseContacts.call(this);
+    const unSubscribe = effect(() => {
+       if(settings.value !== undefined) {
+        mySettings = settings.value;
+        parseContacts.call(this);
+      }
     });
 
     return () => {
-      offSettings();
+      unSubscribe();
     };
 	}, []);
 
@@ -78,7 +81,7 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
 			vault.off("rename", updateFiles);
 			vault.off("delete", updateFiles);
 		};
-	}, [vault, settings.contactsFolder]);
+	}, [vault, mySettings.contactsFolder]);
 
 
   React.useEffect(() => {
@@ -114,8 +117,8 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
                     } else {
                       const records = await vcard.parse(fileContent);
                       for (const record of records) {
-                        const mdContent = mdRender(record, settings.defaultHashtag);
-                        createContactFile(app, settings.contactsFolder, mdContent, createFileName(record))
+                        const mdContent = mdRender(record, mySettings.defaultHashtag);
+                        createContactFile(app, mySettings.contactsFolder, mdContent, createFileName(record))
                       }
                     }
                   })
@@ -130,8 +133,8 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
                 }}
                 onCreateContact={async () => {
                   const records = await vcard.createEmpty();
-                  const mdContent = mdRender(records, settings.defaultHashtag);
-                  createContactFile(app, settings.contactsFolder, mdContent, createFileName(records))
+                  const mdContent = mdRender(records, mySettings.defaultHashtag);
+                  createContactFile(app, mySettings.contactsFolder, mdContent, createFileName(records))
                 }}
                 setDisplayInsightsView={setDisplayInsightsView}
                 sort={sort}
@@ -167,7 +170,7 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
               }} />
           :
             <>
-              {!settings.contactsFolder ?
+              {!mySettings.contactsFolder ?
                 <div className="action-card">
                   <div className="action-card-content">
                     <p>

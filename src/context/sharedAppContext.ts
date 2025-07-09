@@ -1,18 +1,18 @@
-import { App } from 'obsidian'
+import { signal } from "@preact/signals-core";
+import type { App } from 'obsidian';
 
-let _app: App | undefined
+export const app = signal<App | undefined>(undefined);
 
-export function setApp(app: App) {
-	_app = app
+export function setApp(appInput: App) {
+  app.value = appInput;
 }
 
 export function getApp(): App {
-	if (!_app) {
-		throw new Error('App context has not been set.')
-	}
-	return _app
+  const current = app.peek(); // avoid tracking if used in non-reactive contexts
+  if (!current) throw new Error('App context has not been set.');
+  return current;
 }
 
 export function clearApp() {
-	_app = undefined;
+  app.value = undefined;
 }

@@ -1,30 +1,20 @@
+import { effect, signal } from "@preact/signals-core";
 import { TFile } from "obsidian";
-import { string } from "prop-types";
 import { Contact, getFrontmatterFromFiles } from "src/contacts";
 import { vcard } from "src/contacts/vcard";
-import { getSettings, onSettingsChange } from "src/context/sharedSettingsContext";
-import { ContactsPluginSettings } from "src/settings/settings";
+import { settings } from "src/context/sharedSettingsContext";
 import { adapters } from "src/sync/adapters";
 import { VCardMeta } from "src/sync/adapters/adapter";
-import { fnOutOfString, uidOutOfString } from "src/util/vcard";
 
-let cachedSettings: ContactsPluginSettings|undefined = undefined;
+export const enabled = signal(false);
 
-function startSettingsListener() {
-  onSettingsChange(() => {
-    cachedSettings = getSettings()
-  })
-}
-
-const settings = {
-  get current():ContactsPluginSettings {
-    if (!cachedSettings) {
-      cachedSettings = getSettings()
-      startSettingsListener();
-    }
-    return cachedSettings;
+effect(() => {
+  console.log("Settings changed", settings.value?.syncEnabled);
+  if (settings.value && settings.value.syncEnabled) {
+    enabled.value = settings.value.syncEnabled
   }
-};
+})
+
 
 export async function getUnknownFromRemote(currentContacts: Contact[]): Promise<VCardMeta[]> {
    return Promise.resolve([{
@@ -52,33 +42,38 @@ export async function syncContact(contact: Contact) {
 
 
 async function getList() {
-  const setting = settings.current;
-  return adapters[setting.syncSelected]?.getMetaList();
+  const setting = settings.value;
+  if (setting) {
+    return adapters[setting.syncSelected]?.getMetaList();
+  }
+
 }
 
 async function getMetaByUID(uid: string): Promise<void> {
-  const setting = settings.current;
-  const adapter = adapters[setting.syncSelected];
-  if(adapter) {
-    const res = adapter.getMetaByUid(uid);
+  const setting = settings.value;
+  if (setting) {
+    const adapter = adapters[setting.syncSelected];
+    if(adapter) {
+      const res = adapter.getMetaByUid(uid);
+    }
   }
 }
 
 export async function singlePush(file: TFile) {
-  const setting = settings.current;
-  const frontmatter = (await getFrontmatterFromFiles([file]))[0]
-  const adapter = adapters[setting.syncSelected];
+  const setting = settings.value;
+  if (setting) {
+    const frontmatter = (await getFrontmatterFromFiles([file]))[0]
+    const adapter = adapters[setting.syncSelected];
 
-  if(adapter) {
-    const result = await vcard.toString([file]);
-    if (result.errors.length > 0) {
-      return;
+    if (adapter) {
+      const result = await vcard.toString([file]);
+      if (result.errors.length > 0) {
+        return;
+      }
+      await adapter.push({
+        uid: frontmatter.data['UID'].split(':').pop(),
+        raw: result.vcards
+      })
     }
-    await adapter.push({
-      uid: frontmatter.data['UID'].split(':').pop(),
-      raw: result.vcards
-    })
   }
-
-
 }

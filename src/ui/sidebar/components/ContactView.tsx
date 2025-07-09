@@ -1,4 +1,6 @@
+import { effect } from "@preact/signals-core";
 import { setIcon, TFile } from "obsidian";
+import { useState } from "react";
 import * as React from "react";
 import { Contact, parseKey } from "src/contacts";
 import { getApp } from "src/context/sharedAppContext";
@@ -28,13 +30,21 @@ const uiSafeString = (input: unknown): string | undefined => {
 }
 
 export const ContactView = (props: ContactProps) => {
+  const [syncEnabled, setSyncEnabled] = useState(false);
 	const {workspace} = getApp();
 	const contact = props.contact;
 	const buttons = React.useRef<(HTMLElement | null)[]>([]);
-	React.useEffect(() => {
-		buttons.current.forEach(setIconForButton);
-	}, [buttons]);
 
+  React.useEffect(() => {
+		buttons.current.forEach(setIconForButton);
+	}, [buttons, syncEnabled]);
+
+  React.useEffect(() => {
+    const dispose = effect(() => {
+      setSyncEnabled(sync.enabled.value);
+    });
+    return () => dispose();
+  }, []);
 
   const renderTopThreeItems = (
     base: string,
@@ -244,19 +254,21 @@ export const ContactView = (props: ContactProps) => {
                 }}
 							>
 							</div>
-              <div
-                data-icon="refresh-ccw-dot"
-                className={
-                  "clickable-icon nav-action-button "
-                }
-                aria-label="Sync"
-                ref={(element) => (buttons.current[2] = element)}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  sync.syncContact(contact);
-                }}
-              >
-              </div>
+              {syncEnabled ?
+                <div
+                  data-icon="refresh-ccw-dot"
+                  className={
+                    "clickable-icon nav-action-button "
+                  }
+                  aria-label="Sync"
+                  ref={(element) => (buttons.current[2] = element)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    sync.syncContact(contact);
+                  }}
+                >
+                </div>
+              : null}
 						</div>
 					</div>
 				</div>

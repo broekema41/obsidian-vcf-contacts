@@ -1,9 +1,4 @@
-// In CarddavSettings.jsx:
-
-
-
 import * as React from "react";
-
 
 export interface CarddavSettingsInterface {
   addressBookUrl: string;

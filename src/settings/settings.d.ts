@@ -7,13 +7,13 @@ export interface ContactsPluginSettings {
   defaultHashtag: string;
   processors: ProcessorsSettings
   syncSelected: SyncSelected;
+  syncEnabled: boolean;
   CardDAV: CardDavSyncSettings;
 }
 
 
 interface CardDavSyncSettings {
   addressBookUrl: string;
-  syncEnabled: boolean;
   syncInterval: number;
   authKey: string;
   authType: AuthType;

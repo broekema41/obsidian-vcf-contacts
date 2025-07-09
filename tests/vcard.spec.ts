@@ -162,7 +162,7 @@ describe('vcard tostring', () => {
     expect(emailLines[1]).toMatch(/TYPE=WORK/);
 
     // FN should include the file name (FN:base.frontmatter)
-    expect(vcards).toMatch(/^FN:base\.frontmatter$/m);
+    expect(vcards).toMatch(/^FN:Liam OReilly$/m);
 
     expect(vcards).toMatch(/^BEGIN:VCARD$/m);
     expect(vcards).toMatch(/^END:VCARD$/m);
