@@ -99,14 +99,6 @@ export function carddavGenericAdapter(): AdapterInterface {
       return;
     }
 
-    console.log({
-      href,
-      etag: etag?.replace(/"/g, '') || '', // Remove quotes from etag
-      lastModified: lastModified ? new Date(lastModified) : new Date(),
-      uid: uidOutOfString(adressData),
-      fn: fnOutOfString(adressData)
-    });
-
     return {
       href,
       etag: etag?.replace(/"/g, '') || '', // Remove quotes from etag
@@ -176,7 +168,6 @@ export function carddavGenericAdapter(): AdapterInterface {
       });
     });
 
-    console.log(vcardMetas);
     return vcardMetas;
   }
 

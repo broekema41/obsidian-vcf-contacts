@@ -3,20 +3,22 @@ import { Contact } from "src/contacts";
 
 export interface InsightQueItem {
   name: string;
+  isGrouped: boolean;
   runType: RunType
   file: TFile;
   message: string;
-  render: (queItem: InsightQueItem) => JSX.Element;
-  renderGroup: (queItems: InsightQueItem[]) => JSX.Element;
+  render: (queItem: InsightQueItem) => JSX.Element | null;
+  renderGroup: (queItems: InsightQueItem[]) => JSX.Element | null;
 }
 
 export interface InsightProcessor {
   name: string;
+  isGrouped: boolean;
   runType: RunType
   settingPropertyName: string;
   settingDescription: string;
   settingDefaultValue: boolean;
-  process(contact: Contact|Contact[]): Promise<InsightQueItem | InsightQueItem[] |  undefined>;
+  process(contacts: Contact[]): Promise<(InsightQueItem | undefined)[]>;
 }
 
 

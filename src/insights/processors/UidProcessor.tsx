@@ -4,7 +4,7 @@ import { getSettings } from "src/context/sharedSettingsContext";
 import { InsightProcessor, InsightQueItem, RunType } from "src/insights/insight.d";
 import { generateUUID } from "src/util/vcard";
 
-const renderGroup = (queItems: InsightQueItem[]):JSX.Element => {
+const renderGroup = (queItems: InsightQueItem[]): JSX.Element | null => {
   return (
     <div className="action-card">
       <div className="action-card-content">
@@ -15,40 +15,41 @@ const renderGroup = (queItems: InsightQueItem[]):JSX.Element => {
   );
 }
 
-const render = (queItem: InsightQueItem):JSX.Element => {
-  return (
-    <div className="action-card">
-      <div className="action-card-content">
-        <p>{queItem.message}</p>
-      </div>
-    </div>
-  );
+const render = (): JSX.Element | null => {
+  return null;
 }
 
 export const UidProcessor: InsightProcessor = {
   name: "UidProcessor",
   runType: RunType.IMMEDIATELY,
+  isGrouped: true,
   settingPropertyName: 'UidProcessor',
   settingDescription: 'Generates a unique identifier for contact when missing.',
   settingDefaultValue: true,
 
-  async process(contact:Contact): Promise<InsightQueItem | undefined> {
+  async process(contacts:Contact[]): Promise<(InsightQueItem | undefined)[]>{
     const activeProcessor = getSettings().processors[`${this.settingPropertyName}`] as boolean;
-    if (!activeProcessor || contact.data['UID']) {
-      return Promise.resolve(undefined);
-    }
 
-    const UUID = `urn:uuid:${generateUUID()}`
-    await updateFrontMatterValue(contact.file, 'UID', UUID)
+    const queItemsPromises: Promise<InsightQueItem | undefined>[] = contacts.map(async (contact) => {
+      if (!activeProcessor || contact.data['UID']) {
+        return undefined;
+      }
 
-    return Promise.resolve({
-      name: this.name,
-      runType: this.runType,
-      file: contact.file,
-      message: `Generated Unique user identifier for Contact ${contact.file.name}.`,
-      render,
-      renderGroup
+      const UUID = `urn:uuid:${generateUUID()}`;
+      await updateFrontMatterValue(contact.file, 'UID', UUID);
+
+      return {
+        name: this.name,
+        runType: this.runType,
+        file: contact.file,
+        message: `Generated Unique user identifier for Contact ${contact.file.name}.`,
+        isGrouped: UidProcessor.isGrouped,
+        render,
+        renderGroup
+      };
     });
+
+    return await Promise.all(queItemsPromises);
   },
 
 };

@@ -12,6 +12,8 @@ import {
   openFilePicker,
   saveVcardFilePicker
 } from "src/file/file";
+import { ContactsPluginSettings } from "src/settings/settings";
+import { useSettings } from "src/ui/hooks/settingsHook";
 import { ContactsListView } from "src/ui/sidebar/components/ContactsListView";
 import { HeaderView } from "src/ui/sidebar/components/HeaderView";
 import { InsightsView } from "src/ui/sidebar/components/InsightsView";
@@ -29,9 +31,14 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
   const [contacts, setContacts] = React.useState<Contact[]>([]);
   const [displayInsightsView, setDisplayInsightsView] = React.useState<boolean>(false);
 	const [sort, setSort] = React.useState<Sort>(Sort.NAME);
-	let mySettings = getSettings();
+  let mySettings:ContactsPluginSettings = getSettings();
+  const myHookSettings: ContactsPluginSettings|undefined = useSettings();
 
 	const parseContacts = () => {
+    if (!mySettings) {
+      return;
+    }
+
 		const contactsFolder = vault.getAbstractFileByPath(
 			normalizePath(mySettings.contactsFolder)
 		)
@@ -47,19 +54,14 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
 		});
 	};
 
-	React.useEffect(() => {
-		parseContacts();
-    const unSubscribe = effect(() => {
-       if(settings.value !== undefined) {
-        mySettings = settings.value;
-        parseContacts.call(this);
-      }
-    });
+  React.useEffect(() => {
+    if (myHookSettings !== undefined) {
+      // Run your function here, e.g., parseContacts
+      mySettings = myHookSettings;
+      parseContacts();
+    }
+  }, [myHookSettings]);
 
-    return () => {
-      unSubscribe();
-    };
-	}, []);
 
 	React.useEffect(() => {
 		const updateFiles = (file: TFile) => {

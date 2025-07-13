@@ -1,29 +1,42 @@
-import { effect, signal } from "@preact/signals-core";
+import { computed, effect } from "@preact/signals-core";
 import { TFile } from "obsidian";
 import { Contact, getFrontmatterFromFiles } from "src/contacts";
 import { vcard } from "src/contacts/vcard";
 import { settings } from "src/context/sharedSettingsContext";
 import { adapters } from "src/sync/adapters";
 import { VCardMeta } from "src/sync/adapters/adapter";
+import { cleanUid } from "src/util/vcard";
 
-export const enabled = signal(false);
+export const enabled = computed(() => settings.value?.syncEnabled ?? false);
 
-effect(() => {
-  console.log("Settings changed", settings.value?.syncEnabled);
-  if (settings.value && settings.value.syncEnabled) {
-    enabled.value = settings.value.syncEnabled
+function hasUidMatch(remoteContact:VCardMeta, currentContacts: Contact[]) {
+  const uid = remoteContact.uid;
+  if(uid === undefined) {
+    return false;
   }
-})
+  return currentContacts.some(contact =>  cleanUid(contact.data['UID']) === cleanUid(uid));
+}
 
+function hasFnMatch(remoteContact: VCardMeta, currentContacts: Contact[]) {
+  const fn = remoteContact.fn;
+  if(fn === undefined) {
+    return false;
+  }
+  return currentContacts.some(contact => contact.data['FN'] === fn);
+}
 
 export async function getUnknownFromRemote(currentContacts: Contact[]): Promise<VCardMeta[]> {
-   return Promise.resolve([{
-     href: '',
-     etag: '',
-     lastModified: new Date(),
-     uid:  '',
-     fn:  ''
-   }])
+   const fullContactList = await getList();
+   if (!fullContactList) {
+     return [];
+   }
+console.log(fullContactList);
+   const unknownRemoteContacts = fullContactList.filter((remoteContact) => {
+     return !hasUidMatch(remoteContact, currentContacts) && !hasFnMatch(remoteContact, currentContacts);
+   })
+
+  console.log(unknownRemoteContacts);
+  return unknownRemoteContacts;
 }
 
 

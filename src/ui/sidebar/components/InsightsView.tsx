@@ -27,8 +27,7 @@ export const InsightsView = (props: ActionProps) => {
   const [writing, setWriting] = useState(false);
   const writeTimerRef = useRef<number | null>(null);
   const [contacts] = useState(() => props.processContacts);
-  const [immediateResults, setImmediateResults] = useState<Map<string, InsightQueItem[]>>(new Map());
-  const [batchResults, setBatchResults] = useState<Map<string, InsightQueItem[]>>(new Map());
+  const [queItems, setQueItems] = useState<Map<string, InsightQueItem[]>>(new Map());
 
   useEffect(() => {
     if(loading) {
@@ -59,15 +58,18 @@ export const InsightsView = (props: ActionProps) => {
         setWriting(true);
         const immediateResults = await insightService.process(contacts, RunType.IMMEDIATELY);
         const batchResults = await insightService.process(contacts, RunType.BATCH);
+        const improvementResults = await insightService.process(contacts, RunType.INPROVEMENT);
 
         if (immediateResults.length === 0 && batchResults.length === 0) {
           setWriting(false);
           setLoading(false);
         }
 
-
-        setImmediateResults(groupByProcessorNameMap(immediateResults))
-        setBatchResults(groupByProcessorNameMap(batchResults))
+        setQueItems(groupByProcessorNameMap([
+          ...immediateResults,
+          ...batchResults,
+          ...improvementResults
+        ]));
         setLoading(false);
 
       } catch (e) {
@@ -76,6 +78,18 @@ export const InsightsView = (props: ActionProps) => {
     }
     load();
   }, []);
+
+  function renderInsights(insights: InsightQueItem[]) {
+    if (insights.length === 0) {
+      return null;
+    }
+
+    if (insights[0].isGrouped) {
+      return insights[0].renderGroup(insights);
+    } else {
+      return insights.map((insight) => insight.render(insight));
+    }
+  }
 
   return (
     <div className="contacts-view">
@@ -98,7 +112,7 @@ export const InsightsView = (props: ActionProps) => {
 
       {
         !loading ? (
-          Array.from(immediateResults.entries()).length === 0 && Array.from(batchResults.entries()).length === 0 ? (
+          queItems.size === 0 ? (
                   <div className="action-card">
                     <div className="action-card-content action-card-content--no-height">
                       <p>No insights available.</p>
@@ -109,26 +123,31 @@ export const InsightsView = (props: ActionProps) => {
       }
 
       {
-        !loading ? (
-          Array.from(immediateResults.entries()).length > 0 ? (
-            Array.from(immediateResults.entries()).map(([key, insights]) => (
-              insights[0].renderGroup(insights)
-            ))
-          ) : null
-        ) : null
+        !loading && queItems.size > 0
+          ? Array.from(queItems.entries()).map(([key, insights]) => (
+            <React.Fragment key={key}>
+              {renderInsights(insights)}
+            </React.Fragment>
+          ))
+          : null
       }
 
-      {
-        !loading ? (
-          Array.from(immediateResults.entries()).length > 0 ? (
-            Array.from(immediateResults.entries()).map(([key, insights]) => (
-              insights.map(insight => (
-                insight.render(insight)
-              ))
-            ))
-          ) : null
-        ) : null
-      }
+
+      {/*{*/}
+      {/*  !loading ? (*/}
+      {/*    Array.from(queItems.entries()).length > 0 ? (*/}
+      {/*      Array.from(queItems.entries()).map(([key, insights]) => (*/}
+      {/*        if(insights[0].isGrouped) {*/}
+      {/*           insights[0].renderGroup(insights);*/}
+      {/*        } else {*/}
+      {/*          insights.map(insight => (*/}
+      {/*          insight.render(insight)*/}
+      {/*          ))*/}
+      {/*        }*/}
+      {/*      ))*/}
+      {/*    ) : null*/}
+      {/*  ) : null*/}
+      {/*}*/}
 
       {/*<div className="action-card">*/}
       {/*  <div className="action-card-content action-card-content--no-height">*/}

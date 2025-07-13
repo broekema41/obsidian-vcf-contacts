@@ -1,4 +1,4 @@
-import { deleteOnRemote, getUnknownFromRemote, pullFromRemote, syncContact, enabled} from "src/sync/sync";
+import { deleteOnRemote, enabled,getUnknownFromRemote, pullFromRemote, syncContact} from "src/sync/sync";
 
 export const sync = {
   getUnknownFromRemote,

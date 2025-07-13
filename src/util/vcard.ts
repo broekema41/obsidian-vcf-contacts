@@ -4,10 +4,14 @@ export function uidOutOfString(messyString: string):string|undefined {
   let uid;
   if(match) {
     const uidLine = match[0]
-    const parts = uidLine.split(':');
-    uid = parts.length > 1 ? parts.at(-1)!.trim() : '';
+    uid = cleanUid(uidLine);
   }
   return uid
+}
+
+export function cleanUid(uid: string) {
+  const parts = uid.split(':');
+  return parts.length > 1 ? parts.at(-1)!.trim() : uid;
 }
 
 export function fnOutOfString(messyString: string):string|undefined {

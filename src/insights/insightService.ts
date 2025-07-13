@@ -4,25 +4,21 @@ import { InsighSettingProperties, InsightProcessor, InsightQueItem, RunType } fr
 
 const processors = new Map<string, InsightProcessor>();
 
-
-const processBatchcontacts  = async (contacts:Contact[], runType: RunType) => {
-  const insight = [];
-  for (const processor of processors.values()) {
-    if (processor.runType === runType) {
-      insight.push(processor.process(contacts));
-    }
-  }
-  return Promise.all(insight);
+function isDefined<T>(value: T | undefined | null): value is T {
+  return value !== undefined && value !== null;
 }
 
-const processSingleContact  = async (contact:Contact, runType: RunType) => {
-  const insight = [];
+const processContacts  = async (contacts:Contact | Contact[], runType: RunType) => {
+  const insights:InsightQueItem[] = [];
+  const normalizedContacts = Array.isArray(contacts) ? contacts : [contacts];
   for (const processor of processors.values()) {
     if (processor.runType === runType) {
-      insight.push(processor.process(contact));
+        const que = await processor.process(normalizedContacts)
+        const queItems = que.filter(isDefined);
+        insights.push(...queItems);
     }
   }
-  return Promise.all(insight);
+  return insights
 }
 
 export const insightService = {
@@ -32,21 +28,7 @@ export const insightService = {
   },
 
   async process(contacts: Contact|Contact[], runType: RunType): Promise<InsightQueItem[]> {
-    const contactArray = Array.isArray(contacts) ? contacts : [contacts];
-
-    if(runType == RunType.IMMEDIATELY) {
-      const results = await Promise.all(
-        contactArray.map((contact) => processSingleContact(contact, runType))
-      );
-      return results.flat().filter((insight) => insight !== undefined) as InsightQueItem[];
-    }
-
-    if(runType == RunType.BATCH) {
-      const results = await processBatchcontacts(contactArray, runType);
-      return results.flat().filter((insight) => insight !== undefined) as InsightQueItem[];
-    }
-
-    throw new Error('aaaaaaaaahgrrrr');
+      return await processContacts(contacts, runType);
   },
 
   settings(): InsighSettingProperties[] {

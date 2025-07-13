@@ -1,11 +1,10 @@
-import { effect } from "@preact/signals-core";
 import { setIcon, TFile } from "obsidian";
-import { useState } from "react";
 import * as React from "react";
 import { Contact, parseKey } from "src/contacts";
 import { getApp } from "src/context/sharedAppContext";
 import { fileId, openFile } from "src/file/file";
 import { sync } from "src/sync";
+import { useSyncEnabled } from "src/ui/hooks/syncEnabledHook";
 import Avatar from "src/ui/sidebar/components/Avatar";
 import { CopyableItem } from "src/ui/sidebar/components/CopyableItem";
 
@@ -30,7 +29,7 @@ const uiSafeString = (input: unknown): string | undefined => {
 }
 
 export const ContactView = (props: ContactProps) => {
-  const [syncEnabled, setSyncEnabled] = useState(false);
+  const syncEnabled = useSyncEnabled();
 	const {workspace} = getApp();
 	const contact = props.contact;
 	const buttons = React.useRef<(HTMLElement | null)[]>([]);
@@ -38,13 +37,6 @@ export const ContactView = (props: ContactProps) => {
   React.useEffect(() => {
 		buttons.current.forEach(setIconForButton);
 	}, [buttons, syncEnabled]);
-
-  React.useEffect(() => {
-    const dispose = effect(() => {
-      setSyncEnabled(sync.enabled.value);
-    });
-    return () => dispose();
-  }, []);
 
   const renderTopThreeItems = (
     base: string,
