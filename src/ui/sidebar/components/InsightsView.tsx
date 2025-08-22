@@ -71,7 +71,6 @@ export const InsightsView = (props: ActionProps) => {
           ...improvementResults
         ]));
         setLoading(false);
-
       } catch (e) {
         console.error('error loading insights', e);
       }
@@ -79,16 +78,26 @@ export const InsightsView = (props: ActionProps) => {
     load();
   }, []);
 
-  function renderInsights(insights: InsightQueItem[]) {
+  function renderInsights(insights: InsightQueItem[], close:() => void) {
     if (insights.length === 0) {
       return null;
     }
 
     if (insights[0].isGrouped) {
-      return insights[0].renderGroup(insights);
+      return insights[0].renderGroup({queItems: insights, closeItem:close});
     } else {
-      return insights.map((insight) => insight.render(insight));
+      return insights.map((insight) => insight.render({queItem: insight, closeItem: close}));
     }
+  }
+
+  function removeInsightFromMap(key: string) {
+    return () => {
+      console.log("removeInsightFromMap", key);
+      const myKey = key;
+        const newMap = new Map(queItems);
+        newMap.delete(myKey);
+        setQueItems(newMap)
+      }
   }
 
   return (
@@ -126,7 +135,7 @@ export const InsightsView = (props: ActionProps) => {
         !loading && queItems.size > 0
           ? Array.from(queItems.entries()).map(([key, insights]) => (
             <React.Fragment key={key}>
-              {renderInsights(insights)}
+              {renderInsights(insights, removeInsightFromMap(key))}
             </React.Fragment>
           ))
           : null

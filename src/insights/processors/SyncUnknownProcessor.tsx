@@ -1,19 +1,32 @@
 import * as React from "react";
 import { Contact } from "src/contacts";
 import { getSettings } from "src/context/sharedSettingsContext";
-import { InsightProcessor, InsightQueItem, RunType } from "src/insights/insight.d";
+import { InsightProcessor, InsightQueItem, PropsRenderGroup, RunType } from "src/insights/insight.d";
 import { sync } from "src/sync";
 
 const renderGroup = (): JSX.Element | null => {
   return null;
 }
 
-const render = (queItem: InsightQueItem): JSX.Element | null  => {
+type PropsRender = {
+  queItem: InsightQueItem;
+  closeItem: () => void; // Callback for done or close
+};
+
+const render  = ({queItem, closeItem}:PropsRender): JSX.Element | null  => {
   return (
     <div className="action-card">
       <div className="action-card-content">
-        <p>{queItem.message}</p>
+        <p><b>Contact Available</b></p>
+        <p><b>{queItem.data.fn}</b> is available on the remote server.</p>
       </div>
+      <div className="modal-close-button"
+           tabIndex={0}
+           role="button"
+           aria-label="Close"
+           onClick={closeItem}>
+      </div>
+      <button className="action-card-button" onClick={closeItem}>Add to Vault</button>
     </div>
   );
 }
@@ -29,12 +42,25 @@ export const SyncUnknownProcessor: InsightProcessor = {
   async process(contacts:Contact[]): Promise<(InsightQueItem | undefined)[]> {
     const activeProcessor = getSettings().processors[`${this.settingPropertyName}`] as boolean;
     if (!activeProcessor ) {
-      return Promise.resolve([undefined]);
+      return [];
     }
     console.log(contacts);
     const unknownContacts = await sync.getUnknownFromRemote(contacts);
-    console.log(unknownContacts);
-    return Promise.resolve([undefined]);
+    if (unknownContacts.length === 0) {
+      return [];
+    }
+    return unknownContacts.map((unknownContact) => {
+      return {
+        name: this.name,
+        runType: this.runType,
+        file: undefined,
+        message: `${unknownContact.fn} is available on remote.`,
+        isGrouped: SyncUnknownProcessor.isGrouped,
+        data: unknownContact,
+        render,
+        renderGroup
+      }
+    });
   },
 
 };

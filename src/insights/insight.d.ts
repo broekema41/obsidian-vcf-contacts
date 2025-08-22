@@ -1,14 +1,26 @@
 import { TFile } from "obsidian";
 import { Contact } from "src/contacts";
 
+type PropsRenderGroup = {
+  queItems: InsightQueItem[];
+  closeItem: () => void; // Callback for done or close
+};
+
+type PropsRender = {
+  queItem: InsightQueItem;
+  closeItem: () => void; // Callback for done or close
+};
+
+
 export interface InsightQueItem {
   name: string;
   isGrouped: boolean;
   runType: RunType
-  file: TFile;
+  file: TFile| undefined;
   message: string;
-  render: (queItem: InsightQueItem) => JSX.Element | null;
-  renderGroup: (queItems: InsightQueItem[]) => JSX.Element | null;
+  data: any | undefined;
+  render: (queItem: PropsRender)  => JSX.Element | null;
+  renderGroup: ({queItems, closeItem}: PropsRenderGroup) => JSX.Element | null;
 }
 
 export interface InsightProcessor {
