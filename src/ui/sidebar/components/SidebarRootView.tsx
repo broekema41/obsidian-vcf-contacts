@@ -171,10 +171,10 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
                 <div className="action-card">
                   <div className="action-card-content">
                     <p>
-                      Your contacts folder is currently set to the <strong>root of your vault</strong>. We advise to create a specific folder prevent system processing.
+                      Your contacts folder is currently set to the <strong>root of your vault</strong>. We recommend setting to a specific folder to reduce processing requirements.
                     </p>
                     <p>
-                      <button onClick={props.createDefaultPluginFolder} className="mod-cta action-card-button">Make contacts folder</button>
+                      <button onClick={props.createDefaultPluginFolder} className="mod-cta action-card-button">Make Contacts folder</button>
                     </p>
                   </div>
                 </div>
