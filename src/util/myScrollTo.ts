@@ -70,9 +70,15 @@ const clearDebounceTimer = ():void => {
   window.clearTimeout(debounceTimer);
 }
 
+const reset = ():void => {
+  clearDebounceTimer();
+  lastContactLeaf = null;
+}
+
 export default {
 	scrollToTop,
   handleLeafEvent,
   handleOpenWhenNoLeafEventYet,
 	clearDebounceTimer,
+	reset,
 }
