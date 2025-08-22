@@ -14,7 +14,8 @@
       "Bash(npm install:*)",
       "Bash(npm search:*)",
       "Bash(claude mcp add:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(git rebase:*)"
     ],
     "deny": [],
     "ask": [],
