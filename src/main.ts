@@ -9,6 +9,7 @@ import { ContactsSettingTab, DEFAULT_SETTINGS } from './settings/settings';
 
 export default class ContactsPlugin extends Plugin {
 	settings: ContactsPluginSettings;
+	private ribbonIconEl: HTMLElement | null = null;
 
 	async onload() {
 
@@ -18,7 +19,7 @@ export default class ContactsPlugin extends Plugin {
 			(leaf) => new ContactsView(leaf, this)
 		);
 
-		this.addRibbonIcon('contact', 'Contacts', () => {
+		this.ribbonIconEl = this.addRibbonIcon('contact', 'Contacts', () => {
 			this.activateSidebarView();
       myScrollTo.handleLeafEvent(null);
 		});
@@ -26,7 +27,22 @@ export default class ContactsPlugin extends Plugin {
 		this.addSettingTab(new ContactsSettingTab(this.app, this));
 	}
 
-	onunload() {}
+	onunload() {
+		// Clean up all views of this type
+		this.app.workspace.detachLeavesOfType(CONTACTS_VIEW_CONFIG.type);
+		
+		// Remove ribbon icon if it exists
+		if (this.ribbonIconEl) {
+			this.ribbonIconEl.remove();
+			this.ribbonIconEl = null;
+		}
+		
+		// Clear cached settings to prevent stale data on reload
+		this.settings = null as any;
+		
+		// Reset scroll utility state
+		myScrollTo.reset();
+	}
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
