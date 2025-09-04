@@ -13,6 +13,7 @@ export enum VCardSupportedKey {
 	EMAIL = "Email Address",
 	GENDER = "Gender",
 	GEO = "Geolocation (Latitude/Longitude)",
+	KIND = "Contact Type",
 	LANG = "Language Spoken",
 	MEMBER = "Group Member",
 	NAME = "Name Identifier",

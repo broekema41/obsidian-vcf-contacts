@@ -1,7 +1,7 @@
 import { VCardForObsidianRecord, VCardSupportedKey } from "src/contacts/vcard";
-import { ensureHasName } from "src/contacts/vcard/shared/ensureHasName";
 import { StructuredFields } from "src/contacts/vcard/shared/structuredFields";
 import { photoLineFromV3toV4 } from "src/util/photoLineFromV3toV4";
+import { createNameSlug } from "src/contacts/vcard/shared/nameUtils";
 
 function unfoldVCardLines(vCardData: string): string[] {
   // Normalize line endings to \n first (handles \r, \r\n)
@@ -151,16 +151,20 @@ function formatVCardDate(input: string): string {
 	return trimmed;
 }
 
-export function parseToSingles(vCardsRaw:string): string[] {
-	return  vCardsRaw.split(/BEGIN:VCARD\s*[\n\r]+|END:VCARD\s*[\n\r]+/).filter(section => section.trim());
+function parseToSingles(vCardsRaw:string): string[] {
+	return vCardsRaw.split(/BEGIN:VCARD\s*[\n\r]+|END:VCARD\s*[\n\r]+/).filter(section => section.trim());
 }
 
-export async function parse(vCardData: string): Promise<VCardForObsidianRecord[]> {
+/**
+ * Parse vCard file and yields [slug, vCardObject] tuples.
+ * `slug` may be undefined for vcards without valid name info.
+ */
+export async function* parse(vCardData: string): AsyncGenerator<[string | undefined, VCardForObsidianRecord], void, unknown> {
   const singles: string[] = parseToSingles(vCardData);
-
-  return await Promise.all(singles.map(async (singleVCard) => {
+  
+  for (const singleVCard of singles) {
     const unfoldedLines = unfoldVCardLines(singleVCard);
-    const vCardObject: Record<string, any> = {};
+    const vCardObject: VCardForObsidianRecord = {};
 
     for (const line of unfoldedLines) {
       const parsedLine = parseVCardLine(line);
@@ -169,9 +173,13 @@ export async function parse(vCardData: string): Promise<VCardForObsidianRecord[]
         Object.assign(vCardObject, indexedParsedLine);
       }
     }
-    return await ensureHasName(vCardObject);
-  }));
+    
+    // Check if contact has any name information
+    const slug = createNameSlug(vCardObject);
+    yield [slug, vCardObject];
+  }
 }
+
 
 
 

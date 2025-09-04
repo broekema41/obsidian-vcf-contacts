@@ -1,9 +1,10 @@
-import {App, normalizePath, Notice, Platform,TAbstractFile, TFile, TFolder, Vault, Workspace} from "obsidian";
+import {App, normalizePath, Notice, Platform, TFile, TFolder, Vault, Workspace} from "obsidian";
 import { getFrontmatterFromFiles } from "src/contacts";
 import { getSettings } from "src/context/sharedSettingsContext";
 import { RunType } from "src/insights/insight.d";
 import { insightService } from "src/insights/insightService";
 import { FileExistsModal } from "src/ui/modals/fileExistsModal";
+import { createNameSlug } from "src/contacts/vcard/shared/nameUtils";
 
 export async function openFile(file: TFile, workspace: Workspace) {
   const leaf = workspace.getLeaf()
@@ -180,18 +181,14 @@ export function saveVcardFilePicker(data: string, obsidianFile?: TFile ) {
 }
 
 export function createFileName(records: Record<string, string>) {
-	const parts = [
-		records['N.PREFIX'] || '',
-		records['N.GN'] || '',
-		records['N.MN'] || '',
-		records['N.FN'] || '',
-		records['N.SUFFIX'] || ''
-	];
-
-	return parts
-		.map(part => part.trim())
-		.filter(part => part !== '')
-		.join(' ') + '.md';
+	const nameSlug = createNameSlug(records);
+	
+	if (!nameSlug) {
+		console.error('No name found for record', records);
+		throw new Error('No name found for record');
+	}
+	
+	return nameSlug + '.md';
 }
 
 
