@@ -47,7 +47,7 @@ npm run test:coverage  # Run tests with coverage report
   Contains the `*.spec.ts` test files.
 
 - `./tests/fixtures/`  
-  Contains sample data,fixtures used by tests. These simulate realistic and/or defective inputs 
+  Contains sample data (fixtures) used by tests. These simulate realistic and/or defective inputs 
 
 ---
 

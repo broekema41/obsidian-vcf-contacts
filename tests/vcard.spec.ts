@@ -1,8 +1,16 @@
 import { App, TFile } from "obsidian";
-import { vcard } from "src/contacts/vcard";
+import { vcard, VCardForObsidianRecord } from "src/contacts/vcard";
 import { setApp } from "src/context/sharedAppContext";
 import { fixtures } from "tests/fixtures/fixtures";
 import { describe, expect, it, vi } from 'vitest';
+
+// Helper function to parse vCards and collect only those with valid slugs
+const parseValidVCards = async (vcfData: string) => {
+  const cards: VCardForObsidianRecord[] = [];
+  for await (const [slug, card] of vcard.parse(vcfData))
+    if (slug) cards.push(card);
+  return cards;
+};
 
 setApp({
   metadataCache: {
@@ -51,21 +59,21 @@ describe('vcard creatEmpty', () => {
 
 describe('vcard parse', () => {
 
-  it('Should first name and lastname are filled', async () => {
+  it('Should parse N field components correctly', async () => {
     const vcf = fixtures.readVcfFixture('noFirstName.vcf');
-    const result = await vcard.parse(vcf);
-    const expectedFields = ['N.PREFIX', 'N.GN', 'N.MN', 'N.FN', 'N.SUFFIX'];
-    expectedFields.forEach((field) => {
-      expect(result[0]).toHaveProperty(field);
-    });
-    expect(result[0]['N.GN']).toBe('Foo');
-    expect(result[0]['N.FN']).toBe('Bar');
-
+    const result = await parseValidVCards(vcf);
+    // N field is ";Zahra;;;" so only N.GN should be present
+    expect(result[0]['N.GN']).toBe('Zahra');
+    // Empty components should not create fields
+    expect(result[0]['N.FN']).toBeUndefined();
+    expect(result[0]['N.PREFIX']).toBeUndefined();
+    expect(result[0]['N.MN']).toBeUndefined();
+    expect(result[0]['N.SUFFIX']).toBeUndefined();
   });
 
   it('should only import variables that are in a predifined list ', async () => {
     const vcf = fixtures.readVcfFixture('hasNonSpecParameters.vcf');
-    const result = await vcard.parse(vcf);
+    const result = await parseValidVCards(vcf);
     expect(result[0]['N.GN']).toBe('Name');
     expect(result[0]['N.FN']).toBe('My');
     expect(result[0]['NONSPEC']).toBe(undefined);
@@ -74,7 +82,7 @@ describe('vcard parse', () => {
 
   it('should convert some (photo, version) v3 parameters to a v4 implementation', async () => {
     const vcf = fixtures.readVcfFixture('v3SpecificParameters.vcf');
-    const result = await vcard.parse(vcf);
+    const result = await parseValidVCards(vcf);
     expect(result[0]['N.GN']).toBe('Huntelaar');
     expect(result[0]['N.FN']).toBe('Jan');
     expect(result[0]['PHOTO']).toEqual('data:image/type=jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAAAD/2wCEAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ');
@@ -83,15 +91,18 @@ describe('vcard parse', () => {
 
   it('should be able to parse multiple cards from one file', async () => {
     const vcf = fixtures.readVcfFixture('hasMultipleCards.vcf');
-    const result = await vcard.parse(vcf);
-    expect(result.length).toBe(3);
-    expect(result[0]['N.GN']).toBe('Foo');
-    expect(result[0]['N.FN']).toBe('Bar');
+    const result = await parseValidVCards(vcf);
+    // First card has no N field, so it's skipped - only 2 cards imported
+    expect(result.length).toBe(2);
+    expect(result[0]['N.GN']).toBe('Zinkie');
+    expect(result[0]['N.FN']).toBe('Namiton');
+    expect(result[1]['N.GN']).toBe('Lansdorf');
+    expect(result[1]['N.FN']).toBe('Mindie');
   });
 
   it('should add indexes to duplicate field names tobe spec compatible', async () => {
     const vcf = fixtures.readVcfFixture('hasDuplicateParameters.vcf');
-    const result = await vcard.parse(vcf);
+    const result = await parseValidVCards(vcf);
     const expectedKeys = [
       "TEL[WORK]",
       "TEL[1:WORK]",
@@ -126,7 +137,7 @@ describe('vcard parse', () => {
 
   it('should preform try to unify dates received ', async () => {
     const vcf = fixtures.readVcfFixture('hasDifferentDates.vcf');
-    const result = await vcard.parse(vcf);
+    const result = await parseValidVCards(vcf);
 
     const isIsoDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v);
     expect(isIsoDate(result[0]['BDAY'])).toBe(true);
@@ -138,10 +149,55 @@ describe('vcard parse', () => {
 
   it('should be able to handle a spec folded multiline.', async () => {
     const vcf = fixtures.readVcfFixture('hasFoldeLines.vcf');
-    const result = await vcard.parse(vcf);
+    const result = await parseValidVCards(vcf);
     expect(result[0]['N.GN']).toBe('Huntelaar');
     expect(result[0]['N.FN']).toBe('Jan');
     expect(result[0]['NOTE']).toBe('This is a long note that continues on the next line, and still keeps going.');
+  });
+
+  it('should handle organization contacts without name dialog', async () => {
+    const vcf = fixtures.readVcfFixture('organization.vcf');
+    const result = await parseValidVCards(vcf);
+    expect(result[0]['KIND']).toBe('org');
+    expect(result[0]['FN']).toBe('Acme Corporation');
+    expect(result[0]['ORG']).toBe('Acme Corporation');
+    // Should not have N fields populated since it's an organization
+    expect(result[0]['N.GN']).toBeUndefined();
+    expect(result[0]['N.FN']).toBeUndefined();
+  });
+
+  it('should skip the contact for organizations without FN', async () => {
+    const vcf = fixtures.readVcfFixture('organizationNoFN.vcf');
+    const result = await parseValidVCards(vcf);
+    expect(result).toEqual([]);
+  });
+
+  it('should skip organization contacts without FN or ORG', async () => {
+    const vcfWithoutFnOrOrg = `BEGIN:VCARD
+VERSION:4.0
+KIND:org
+TEL;TYPE=WORK:+1-555-0300
+END:VCARD`;
+
+    // Organization without FN or ORG has no valid slug, so it's skipped
+    const result = await parseValidVCards(vcfWithoutFnOrOrg);
+    expect(result.length).toBe(0);
+  });
+
+  it('should detect implicit organization (no N fields)', async () => {
+    const vcfImplicitOrg = `BEGIN:VCARD
+VERSION:4.0
+FN:Tech Company
+ORG:Tech Company
+TEL;TYPE=WORK:+1-555-0400
+END:VCARD`;
+
+    const result = await parseValidVCards(vcfImplicitOrg);
+    // Should not trigger name dialog since it's detected as org
+    expect(result[0]['FN']).toBe('Tech Company');
+    expect(result[0]['ORG']).toBe('Tech Company');
+    expect(result[0]['N.GN']).toBeUndefined();
+    expect(result[0]['N.FN']).toBeUndefined();
   });
 });
 

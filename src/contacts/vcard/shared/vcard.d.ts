@@ -13,6 +13,7 @@ export enum VCardSupportedKey {
 	EMAIL = "Email Address",
 	GENDER = "Gender",
 	GEO = "Geolocation (Latitude/Longitude)",
+	KIND = "Contact Type",
 	LANG = "Language Spoken",
 	MEMBER = "Group Member",
 	NAME = "Name Identifier",
@@ -44,3 +45,5 @@ export interface VCardToStringReply {
   vcards: string;
   errors: VCardToStringError[];
 }
+
+export type VCardKind = "individual" | "org" | "group";

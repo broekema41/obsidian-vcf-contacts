@@ -1,9 +1,10 @@
-import { MarkdownView, normalizePath, Notice, TFile, TFolder } from "obsidian";
+import { App, MarkdownView, normalizePath, Notice, TFile, TFolder } from "obsidian";
 import * as React from "react";
 import { Contact, getFrontmatterFromFiles, mdRender } from "src/contacts";
 import { vcard } from "src/contacts/vcard";
 import { getApp } from "src/context/sharedAppContext";
 import { getSettings, onSettingsChange } from "src/context/sharedSettingsContext";
+import { ContactsPluginSettings } from "src/settings/settings.d";
 import {
   createContactFile,
   createFileName,
@@ -22,6 +23,30 @@ interface SidebarRootViewProps {
   sideBarApi: (api: { createNewContact: () => void }) => void;
   createDefaultPluginFolder: () => Promise<void>;
 }
+
+const importVCFContacts = async (fileContent: string, app: App, settings: ContactsPluginSettings) => {
+  if (fileContent === '') return;
+    
+  let imported = 0;
+  let skipped = 0;
+  
+  // Use generator to avoid double parsing and reduce memory usage
+  for await (const [slug, record] of vcard.parse(fileContent)) {
+    if (slug) {
+      const mdContent = mdRender(record, settings.defaultHashtag);
+      const filename = slug + '.md';
+      createContactFile(app, settings.contactsFolder, mdContent, filename);
+      imported++;
+    } else {
+      // Contact has no valid name/slug
+      console.warn("Skipping contact without name", record);
+      skipped++;
+    }
+  }
+  
+  if (skipped > 0) new Notice(`Skipped ${skipped} contact(s) without name information`);
+  if (imported > 0) new Notice(`Imported ${imported} contact(s)`);
+};
 
 export const SidebarRootView = (props: SidebarRootViewProps) => {
 	const app = getApp();
@@ -121,15 +146,7 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
                 onSortChange={setSort}
                 importVCF={() => {
                   openFilePicker('.vcf').then(async (fileContent: string) => {
-                    if (fileContent === '') {
-                      return;
-                    } else {
-                      const records = await vcard.parse(fileContent);
-                      for (const record of records) {
-                        const mdContent = mdRender(record, settings.defaultHashtag);
-                        createContactFile(app, settings.contactsFolder, mdContent, createFileName(record))
-                      }
-                    }
+                    await importVCFContacts(fileContent, app, settings);
                   })
                 }}
                 exportAllVCF={async() => {

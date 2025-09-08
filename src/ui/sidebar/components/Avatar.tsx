@@ -1,3 +1,4 @@
+import { init } from "es-module-lexer";
 import * as React from "react";
 import { photoLineFromV3toV4 } from "src/util/photoLineFromV3toV4";
 
@@ -6,11 +7,18 @@ interface AvatarProps {
 	photoUrl?: string;
 	firstName: string;
 	lastName: string;
+  functionalName: string;
 }
 
 export const Avatar = (props: AvatarProps) => {
 	const [hasImageError, setHasImageError] = React.useState(false);
-	const initials = `${props.firstName.charAt(0).toUpperCase()}${props.lastName.charAt(0).toUpperCase()}`;
+	let initials = ''
+
+    if (props.firstName && props.lastName) {
+      initials =`${props.firstName.charAt(0).toUpperCase()}${props.lastName.charAt(0).toUpperCase()}`;
+    } else if (props.functionalName) {
+      initials = `${props.functionalName.charAt(0).toUpperCase()}${props.functionalName.charAt(1).toUpperCase()}`;
+    }
 
   React.useEffect(() => {
     setHasImageError(false);
