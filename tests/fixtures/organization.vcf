@@ -1,0 +1,8 @@
+BEGIN:VCARD
+VERSION:4.0
+KIND:org
+FN:Acme Corporation
+ORG:Acme Corporation
+TEL;TYPE=WORK:+1-555-0100
+EMAIL;TYPE=WORK:contact@acme.corp
+END:VCARD

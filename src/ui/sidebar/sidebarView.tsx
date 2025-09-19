@@ -1,4 +1,5 @@
 import { ItemView, Notice, WorkspaceLeaf } from "obsidian";
+import { createRef } from "react";
 import * as React from "react";
 import { createRoot } from "react-dom/client";
 import { clearApp, setApp } from "src/context/sharedAppContext";
@@ -7,9 +8,15 @@ import ContactsPlugin from "src/main";
 import { SidebarRootView } from "src/ui/sidebar/components/SidebarRootView";
 import { CONTACTS_VIEW_CONFIG } from "src/util/constants";
 
+
+export type SidebarAPI = {
+  createNewContact: () => void;
+};
+
 export class ContactsView extends ItemView {
 	root = createRoot(this.containerEl.children[1]);
 	plugin: ContactsPlugin;
+  private sideBarApi: { createNewContact: () => void } | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: ContactsPlugin) {
 		super(leaf);
@@ -37,6 +44,10 @@ export class ContactsView extends ItemView {
     }
   }
 
+  createNewContact() {
+    this.sideBarApi?.createNewContact();
+  }
+
 	getViewType(): string {
 		return CONTACTS_VIEW_CONFIG.type;
 	}
@@ -54,6 +65,7 @@ export class ContactsView extends ItemView {
     setSettings(this.plugin.settings);
 		this.root.render(
 				<SidebarRootView
+          sideBarApi={(sideBarApi: SidebarAPI) => (this.sideBarApi = sideBarApi)}
           createDefaultPluginFolder={this.createDefaultPluginFolder.bind(this)}
         />
 		);

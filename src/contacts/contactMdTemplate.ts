@@ -78,12 +78,16 @@ export function mdRender(record: Record<string, any>, hashtags: string): string 
 		additionalTags = `#${tempTags.join(' #')}`
 	}
 
+	// Combine all groups into a single object for YAML serialization
+	const frontmatter = {
+		...sortNameItems(groups.name),
+		...sortedPriorityItems(groups.priority),
+		...groups.address,
+		...groups.other
+	};
+
 	return `---
-${stringifyYaml(sortNameItems(groups.name))}
-${stringifyYaml(sortedPriorityItems(groups.priority))}
-${stringifyYaml(groups.address)}
-${stringifyYaml(groups.other)}
----
+${stringifyYaml(frontmatter)}---
 #### Notes
 ${myNote}
 

@@ -1,5 +1,4 @@
-import { effect } from "@preact/signals-core";
-import { MarkdownView, normalizePath, Notice, TFile, TFolder } from "obsidian";
+import { App, MarkdownView, normalizePath, Notice, TFile, TFolder } from "obsidian";
 import * as React from "react";
 import { Contact, getFrontmatterFromFiles, mdRender } from "src/contacts";
 import { vcard } from "src/contacts/vcard";
@@ -22,8 +21,33 @@ import { Sort } from "src/util/constants";
 import myScrollTo from "src/util/myScrollTo";
 
 interface SidebarRootViewProps {
+  sideBarApi: (api: { createNewContact: () => void }) => void;
   createDefaultPluginFolder: () => Promise<void>;
 }
+
+const importVCFContacts = async (fileContent: string, app: App, settings: ContactsPluginSettings) => {
+  if (fileContent === '') return;
+
+  let imported = 0;
+  let skipped = 0;
+
+  // Use generator to avoid double parsing and reduce memory usage
+  for await (const [slug, record] of vcard.parse(fileContent)) {
+    if (slug) {
+      const mdContent = mdRender(record, settings.defaultHashtag);
+      const filename = slug + '.md';
+      createContactFile(app, settings.contactsFolder, mdContent, filename);
+      imported++;
+    } else {
+      // Contact has no valid name/slug
+      console.warn("Skipping contact without name", record);
+      skipped++;
+    }
+  }
+
+  if (skipped > 0) new Notice(`Skipped ${skipped} contact(s) without name information`);
+  if (imported > 0) new Notice(`Imported ${imported} contact(s)`);
+};
 
 export const SidebarRootView = (props: SidebarRootViewProps) => {
 	const app = getApp();
@@ -62,6 +86,16 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
     }
   }, [myHookSettings]);
 
+  // React.useEffect(() => {
+  //   return () => {
+  //     offSettings();
+  //   };
+	// }, []);
+
+
+  React.useEffect(() => {
+    props.sideBarApi({ createNewContact });
+  }, []);
 
 	React.useEffect(() => {
 		const updateFiles = (file: TFile) => {
@@ -99,6 +133,12 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
     };
   }, [workspace]);
 
+  async function createNewContact() {
+      const records = await vcard.createEmpty();
+      const mdContent = mdRender(records, mySettings.defaultHashtag);
+      createContactFile(app, mySettings.contactsFolder, mdContent, createFileName(records))
+  }
+
 	return (
 		<div className="contacts-sidebar">
       { displayInsightsView ?
@@ -114,15 +154,7 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
                 onSortChange={setSort}
                 importVCF={() => {
                   openFilePicker('.vcf').then(async (fileContent: string) => {
-                    if (fileContent === '') {
-                      return;
-                    } else {
-                      const records = await vcard.parse(fileContent);
-                      for (const record of records) {
-                        const mdContent = mdRender(record, mySettings.defaultHashtag);
-                        createContactFile(app, mySettings.contactsFolder, mdContent, createFileName(record))
-                      }
-                    }
+                    await importVCFContacts(fileContent, app, mySettings);
                   })
                 }}
                 exportAllVCF={async() => {
@@ -133,11 +165,7 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
                   })
                   saveVcardFilePicker(vcards)
                 }}
-                onCreateContact={async () => {
-                  const records = await vcard.createEmpty();
-                  const mdContent = mdRender(records, mySettings.defaultHashtag);
-                  createContactFile(app, mySettings.contactsFolder, mdContent, createFileName(records))
-                }}
+                onCreateContact={createNewContact}
                 setDisplayInsightsView={setDisplayInsightsView}
                 sort={sort}
               />
@@ -176,10 +204,10 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
                 <div className="action-card">
                   <div className="action-card-content">
                     <p>
-                      Your contacts folder is currently set to the <strong>root of your vault</strong>. We advise to create a specific folder prevent system processing.
+                      Your contacts folder is currently set to the <strong>root of your vault</strong>. We recommend setting to a specific folder to reduce processing requirements.
                     </p>
                     <p>
-                      <button onClick={props.createDefaultPluginFolder} className="mod-cta action-card-button">Make contacts folder</button>
+                      <button onClick={props.createDefaultPluginFolder} className="mod-cta action-card-button">Make Contacts folder</button>
                     </p>
                   </div>
                 </div>

@@ -7,6 +7,7 @@ import { sync } from "src/sync";
 import { useSyncEnabled } from "src/ui/hooks/syncEnabledHook";
 import Avatar from "src/ui/sidebar/components/Avatar";
 import { CopyableItem } from "src/ui/sidebar/components/CopyableItem";
+import { getUiName, uiSafeString } from "src/util/nameUtils";
 
 type ContactProps = {
 	contact: Contact;
@@ -14,19 +15,7 @@ type ContactProps = {
 	processAvatar: (contact: Contact) => void;
 };
 
-const uiSafeString = (input: unknown): string | undefined => {
-  if (input === null || input === undefined){
-    return undefined;
-  }
 
-  if (typeof input === 'string') {
-    return input.trim();
-  } else if (typeof input === 'number' || input instanceof Date || typeof input === 'boolean') {
-    return input.toString();
-  } else {
-    return undefined;
-  }
-}
 
 export const ContactView = (props: ContactProps) => {
   const syncEnabled = useSyncEnabled();
@@ -186,19 +175,11 @@ export const ContactView = (props: ContactProps) => {
 						<div className="biz-card-a">
 							<div className="biz-headshot biz-pic-drew">
 								<Avatar photoUrl={contact.data["PHOTO"]} firstName={contact.data["N.GN"]}
-												lastName={contact.data["N.FN"]}/>
+												lastName={contact.data["N.FN"]} functionalName={contact.data["FN"]}/>
 								<div className="biz-words-container">
 									<div className="biz-name">
-									{[
-										contact.data["N.PREFIX"],
-										contact.data["N.GN"],
-										contact.data["N.MN"],
-										contact.data["N.FN"],
-										contact.data["N.SUFFIX"]
-									]
-                    .map(uiSafeString)
-                    .filter((value)=> value !== undefined)
-										.join(' ')}</div>
+                    {getUiName(contact.data)}
+                  </div>
 
 									{contact.data["ROLE"] ? (
 										<div className="biz-title">{contact.data["ROLE"]}</div>

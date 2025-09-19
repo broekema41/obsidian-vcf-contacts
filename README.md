@@ -337,6 +337,23 @@ Start using the plugin today and share your experience in the [💬 GitHub Discu
 
 ---
 
+## 🔧 Development
+
+For plugin development:
+```bash
+# Install dependencies
+npm install
+
+# Build the plugin
+npm run build
+
+# Development build
+npm run dev
+npm run dev watch   # with auto-rebuild on changes
+```
+
+---
+
 ## 📘 Testing strategy
 Our goal is to maintain high-confidence, non-UI testing that focuses on:
 * Validating all resolved production bugs.

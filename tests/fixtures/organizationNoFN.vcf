@@ -1,0 +1,7 @@
+BEGIN:VCARD
+VERSION:4.0
+KIND:org
+ORG:Tech Solutions Inc
+TEL;TYPE=WORK:+1-555-0200
+EMAIL;TYPE=WORK:info@techsolutions.com
+END:VCARD

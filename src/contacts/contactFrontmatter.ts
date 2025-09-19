@@ -11,7 +11,7 @@ export async function getFrontmatterFromFiles(files: TFile[]) {
   const contactsData: Contact[] = [];
   for (const file of files) {
 		const frontMatter = metadataCache.getFileCache(file)?.frontmatter
-		if (frontMatter?.['N.GN'] && frontMatter?.['N.FN'] ) {
+		if ((frontMatter?.['N.GN'] && frontMatter?.['N.FN']) || frontMatter?.['FN']) {
 			contactsData.push({
 				file,
 				data: frontMatter,

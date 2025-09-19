@@ -65,6 +65,11 @@ function generateVCard(file: TFile): string {
     singleLineFields.push(['FN', file.basename]);
   }
 
+  const hasFN = singleLineFields.some(([key, _]) => key === 'FN');
+  if (!hasFN) {
+    singleLineFields.push(['FN', file.basename]);
+  }
+
   const structuredLines = renderStructuredLines(structuredFields);
   const singleLines = singleLineFields.map(renderSingleKey);
   const lines = structuredLines.concat(singleLines);
