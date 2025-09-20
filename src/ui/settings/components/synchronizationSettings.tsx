@@ -86,6 +86,13 @@ export function SynchronizationSettings({plugin, app}: SynchronizationSettingsPr
 
   return (
     <>
+      <div className="setting-item setting-item-heading">
+        <div className="setting-item-info">
+          <div className="setting-item-name">Synchronization settings</div>
+          <div className="setting-item-description"></div>
+        </div>
+        <div className="setting-item-control"></div>
+      </div>
       <div className="setting-item js-keep">
         <div className="setting-item-info">
           <div className="setting-item-name">Synchronization</div>
@@ -97,7 +104,7 @@ export function SynchronizationSettings({plugin, app}: SynchronizationSettingsPr
         <div className="setting-item-control">
           {syncEnabled ?
             <button className="mod-destructive" onClick={disableSync}>Disable</button>
-          :
+            :
             <button className="mod-cta" onClick={enableSync}>Enable</button>
           }
         </div>
