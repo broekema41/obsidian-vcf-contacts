@@ -44,7 +44,6 @@ export const SyncUnknownProcessor: InsightProcessor = {
     if (!activeProcessor ) {
       return [];
     }
-    console.log(contacts);
     const unknownContacts = await sync.getUnknownFromRemote(contacts);
     if (unknownContacts.length === 0) {
       return [];

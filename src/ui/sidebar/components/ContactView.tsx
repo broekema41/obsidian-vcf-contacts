@@ -1,4 +1,4 @@
-import { setIcon, TFile } from "obsidian";
+import { Menu, MenuItem, setIcon, TFile } from "obsidian";
 import * as React from "react";
 import { Contact, parseKey } from "src/contacts";
 import { getApp } from "src/context/sharedAppContext";
@@ -162,6 +162,31 @@ export const ContactView = (props: ContactProps) => {
 		return null;
 	};
 
+  const handleSyncContextMenu = (myContact: Contact) => {
+    return (event: React.MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const menu = new Menu();
+      menu.addItem((item:MenuItem) =>
+        item.setSection("vcf-sync-main").setTitle("Push").setIcon("square-arrow-up").onClick(() =>{
+          sync.pushToRemote(myContact);
+        })
+      );
+      menu.addItem((item:MenuItem) =>
+        item.setSection("vcf-sync-main").setTitle("Pull").setIcon("square-arrow-down").onClick(() =>{
+          sync.pullFromRemote(myContact);
+        })
+      );
+      menu.addItem((item:MenuItem) =>
+        item.setSection("vcf-sync-danger").setTitle("Delete").setIcon("trash-2").onClick(() =>{
+          sync.deleteOnRemote(myContact);
+        })
+      );
+      menu.showAtPosition({ x: event.pageX, y: event.pageY });
+    }
+
+  };
+
 	return (
 		<div
 			className="contact-card"
@@ -235,10 +260,7 @@ export const ContactView = (props: ContactProps) => {
                   }
                   aria-label="Sync"
                   ref={(element) => (buttons.current[2] = element)}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    sync.syncContact(contact);
-                  }}
+                  onClick={handleSyncContextMenu(contact)}
                 >
                 </div>
               : null}

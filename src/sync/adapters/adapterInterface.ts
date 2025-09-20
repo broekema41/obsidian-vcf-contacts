@@ -11,9 +11,16 @@ export interface AdapterInterface {
   push(vcard: VCardRaw): Promise<void>;
 
   /**
+   * delete a single vCard identified by its UID.
+   * @param href The unique path of the vCard to pull
+   * @returns Promise that resolves on success
+   */
+  delete(href: string): Promise<void>;
+
+  /**
    * Pull (fetch) a single vCard by UID.
-   * @param uid The unique identifier of the vCard to pull
-   * @returns Promise resolving to the vCard (or null if not found)
+   * @param href The unique path of the vCard to pull
+   * @returns Promise that resolves on success
    */
   pull(href: string): Promise<VCardRaw | undefined>;
 

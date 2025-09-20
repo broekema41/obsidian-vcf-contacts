@@ -339,3 +339,10 @@
   margin-top: 0.75em;
 }
 
+.menu .menu-item[data-section="vcf-sync-danger"] {
+  color: var(--text-error);
+}
+
+.menu .menu-item[data-section="vcf-sync-danger"] .menu-item-icon {
+  color: var(--text-error);
+}

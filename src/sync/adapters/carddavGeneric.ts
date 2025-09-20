@@ -175,17 +175,12 @@ export function carddavGenericAdapter(): AdapterInterface {
   const pull = async (href: string): Promise<VCardRaw | undefined> => {
     const settings = getSettings();
     const vcfUrl = new URL(href, settings.CardDAV.addressBookUrl).toString();
-    console.log('vcfUrl', vcfUrl);
     const res = await PlatformHttpClient.request({
       url: vcfUrl,
       method: 'GET',
       headers: {
         Authorization: getAuthHeader(settings)
       }
-    });
-    console.log({
-      uid: uidOutOfString(res.data),
-      raw: res.data,
     });
     return {
       uid: uidOutOfString(res.data),
@@ -197,7 +192,7 @@ export function carddavGenericAdapter(): AdapterInterface {
     const settings = getSettings();
 
     const vcfUrl = settings.CardDAV.addressBookUrl + `/${vcard.uid}.vcf`;
-    const res = await PlatformHttpClient.request({
+    await PlatformHttpClient.request({
       url: vcfUrl,
       method: 'PUT',
       body: vcard.raw,
@@ -206,8 +201,18 @@ export function carddavGenericAdapter(): AdapterInterface {
         ['Content-Type']: 'text/vcard; charset=utf-8'
       }
     });
+  }
 
-    console.log('done push', res);
+  const deleteContact = async (href: string): Promise<void> => {
+    const settings = getSettings();
+    const vcfUrl = new URL(href, settings.CardDAV.addressBookUrl).toString();
+    await PlatformHttpClient.request({
+      url: vcfUrl,
+      method: 'DELETE',
+      headers: {
+        Authorization: getAuthHeader(settings)
+      }
+    });
   }
 
   return {
@@ -215,7 +220,8 @@ export function carddavGenericAdapter(): AdapterInterface {
     getMetaByUid,
     getMetaList,
     pull,
-    push
+    push,
+    delete: deleteContact
   };
 
 }
