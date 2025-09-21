@@ -45,7 +45,7 @@ export function carddavGenericAdapter(): AdapterInterface {
   };
 
 
-  const getMetaByUid = async (uid: string): Promise<VCardMeta|undefined> => {
+  const getMetaByUid = async (uid: string): Promise<VCardMeta | AppHttpResponse | undefined> => {
     const settings = getSettings();
     const body = `<?xml version="1.0" encoding="UTF-8"?>
 <C:addressbook-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:carddav">
@@ -75,6 +75,10 @@ export function carddavGenericAdapter(): AdapterInterface {
       },
       body
     });
+
+    if(res.errorMessage) {
+      return res;
+    }
 
     const parser = new DOMParser();
     const xml = parser.parseFromString(res.data, 'application/xml');
@@ -109,7 +113,7 @@ export function carddavGenericAdapter(): AdapterInterface {
   }
 
 
-  const getMetaList = async (): Promise<VCardMeta[]> => {
+  const getMetaList = async (): Promise<VCardMeta[] | AppHttpResponse> => {
     const settings = getSettings();
     const body = `<?xml version="1.0" encoding="UTF-8"?>
 <C:addressbook-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:carddav">
@@ -134,6 +138,10 @@ export function carddavGenericAdapter(): AdapterInterface {
       },
       body
     });
+
+    if(res.errorMessage) {
+      return res;
+    }
 
     const parser = new DOMParser();
     const xml = parser.parseFromString(res.data, 'application/xml');
@@ -172,7 +180,7 @@ export function carddavGenericAdapter(): AdapterInterface {
   }
 
 
-  const pull = async (href: string): Promise<VCardRaw | undefined> => {
+  const pull = async (href: string): Promise<VCardRaw | AppHttpResponse> => {
     const settings = getSettings();
     const vcfUrl = new URL(href, settings.CardDAV.addressBookUrl).toString();
     const res = await PlatformHttpClient.request({
@@ -182,17 +190,21 @@ export function carddavGenericAdapter(): AdapterInterface {
         Authorization: getAuthHeader(settings)
       }
     });
+
+    if(res.errorMessage) {
+      return res;
+    }
+
     return {
       uid: uidOutOfString(res.data),
       raw: res.data,
     }
   }
 
-  const push = async (vcard: VCardRaw): Promise<void> => {
+  const push = async (vcard: VCardRaw): Promise<AppHttpResponse> => {
     const settings = getSettings();
-
     const vcfUrl = settings.CardDAV.addressBookUrl + `/${vcard.uid}.vcf`;
-    await PlatformHttpClient.request({
+    return await PlatformHttpClient.request({
       url: vcfUrl,
       method: 'PUT',
       body: vcard.raw,
@@ -203,10 +215,10 @@ export function carddavGenericAdapter(): AdapterInterface {
     });
   }
 
-  const deleteContact = async (href: string): Promise<void> => {
+  const deleteContact = async (href: string): Promise<AppHttpResponse> => {
     const settings = getSettings();
     const vcfUrl = new URL(href, settings.CardDAV.addressBookUrl).toString();
-    await PlatformHttpClient.request({
+    return await PlatformHttpClient.request({
       url: vcfUrl,
       method: 'DELETE',
       headers: {

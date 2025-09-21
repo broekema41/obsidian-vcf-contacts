@@ -78,26 +78,39 @@ export const InsightsView = (props: ActionProps) => {
     load();
   }, []);
 
-  function renderInsights(insights: InsightQueItem[], close:() => void) {
+  function renderInsights(processorName: string, insights: InsightQueItem[]) {
     if (insights.length === 0) {
       return null;
     }
 
     if (insights[0].isGrouped) {
-      return insights[0].renderGroup({queItems: insights, closeItem:close});
+      return insights[0].renderGroup({
+        queItems: insights,
+        closeItem:removeInsightFromMap(processorName)
+      });
     } else {
-      return insights.map((insight) => insight.render({queItem: insight, closeItem: close}));
+      return insights.map((insight, index) => insight.render({
+        queItem: insight,
+        closeItem: removeInsightFromMap(processorName, index)}));
     }
   }
 
-  function removeInsightFromMap(key: string) {
+  function removeInsightFromMap(processorName: string, index?:number) {
     return () => {
-      console.log("removeInsightFromMap", key);
-      const myKey = key;
-        const newMap = new Map(queItems);
+      const myKey = processorName;
+      const myIndex = index;
+      const newMap = new Map(queItems);
+      if (myIndex !== undefined && myIndex !== null) {
+        const items = newMap.get(myKey);
+        if (items) {
+          items.splice(myIndex, 1)
+          newMap.set(myKey, items);
+        }
+      } else {
         newMap.delete(myKey);
-        setQueItems(newMap)
       }
+      setQueItems(newMap)
+    }
   }
 
   return (
@@ -118,7 +131,6 @@ export const InsightsView = (props: ActionProps) => {
         </div>
       )}
 
-
       {
         !loading ? (
           queItems.size === 0 ? (
@@ -133,11 +145,7 @@ export const InsightsView = (props: ActionProps) => {
 
       {
         !loading && queItems.size > 0
-          ? Array.from(queItems.entries()).map(([key, insights]) => (
-            <React.Fragment key={key}>
-              {renderInsights(insights, removeInsightFromMap(key))}
-            </React.Fragment>
-          ))
+          ? Array.from(queItems.entries()).map(([processorName, insights]) => renderInsights(processorName, insights))
           : null
       }
 

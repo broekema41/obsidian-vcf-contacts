@@ -18,7 +18,8 @@ const HTTP_STATUS_TITLES: Record<number, string> = {
   403: '403 Forbidden',
   404: '404 Not Found',
   500: '500 Internal Server Error',
-  // Add more as needed
+  502: '502 refused connection or is not available.'
+
 };
 
 export const PlatformHttpClient = {
@@ -31,6 +32,19 @@ export const PlatformHttpClient = {
       };
 
     } catch (err: any) {
+      if(err.code &&
+        [ "ECONNREFUSED",
+          "ETIMEDOUT",
+          "ENOTFOUND",
+          "ECONNRESET",
+        ].includes(err.code)) {
+        return {
+          status: 502,
+          data: '',
+          headers: {},
+          errorMessage: HTTP_STATUS_TITLES[502]
+        };
+      }
       return {
         status: 500,
         data: '',
@@ -40,6 +54,11 @@ export const PlatformHttpClient = {
     }
   }
 };
+
+
+interface ErrnoException extends Error {
+  code?: string;
+}
 
 async function nodeRequest(
   url: string,
@@ -77,8 +96,8 @@ async function nodeRequest(
       });
     });
 
-    req.on('error', () => {
-      reject();
+    req.on('error', (err: ErrnoException) => {
+      reject(err);
     });
 
     if (body) {

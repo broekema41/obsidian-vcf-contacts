@@ -1,10 +1,11 @@
-import { computed, effect } from "@preact/signals-core";
-import { TFile } from "obsidian";
+import { computed } from "@preact/signals-core";
+import { Notice } from "obsidian";
 import { Contact, getFrontmatterFromFiles, updateFrontMatterValue } from "src/contacts";
 import { vcard } from "src/contacts/vcard";
 import { settings } from "src/context/sharedSettingsContext";
 import { adapters } from "src/sync/adapters";
-import { VCardMeta } from "src/sync/adapters/adapter";
+import { VCardMeta, VCardRaw } from "src/sync/adapters/adapter";
+import { AppHttpResponse } from "src/util/platformHttpClient";
 import { cleanUid } from "src/util/vcard";
 
 export const enabled = computed(() => settings.value?.syncEnabled ?? false);
@@ -26,20 +27,24 @@ function hasFnMatch(remoteContact: VCardMeta, currentContacts: Contact[]) {
 }
 
 export async function getUnknownFromRemote(currentContacts: Contact[]): Promise<VCardMeta[]> {
-   const fullContactList = await getList();
+  const fullContactList = await getList();
   console.log('fullContactList', fullContactList);
-   if (!fullContactList) {
-     return [];
-   }
+  if (fullContactList && "errorMessage" in fullContactList) {
+    new Notice(fullContactList.errorMessage);
+    return [];
+  }
 
-   const unknownRemoteContacts = fullContactList.filter((remoteContact) => {
-     return !hasUidMatch(remoteContact, currentContacts) && !hasFnMatch(remoteContact, currentContacts);
-   })
+  if (!fullContactList) {
+    return [];
+  }
+
+  const unknownRemoteContacts = fullContactList.filter((remoteContact) => {
+    return !hasUidMatch(remoteContact, currentContacts) && !hasFnMatch(remoteContact, currentContacts);
+  })
 
   console.log(unknownRemoteContacts);
   return unknownRemoteContacts;
 }
-
 
 export async function getRawVcardFromRemote(href: string) {
   const setting = settings.value;
@@ -65,18 +70,52 @@ export async function deleteOnRemote(contact: Contact) {
 }
 
 export async function pushToRemote(contact: Contact) {
-  await singlePush(contact.file);
+  const setting = settings.value;
+  if (setting) {
+    const frontmatter = (await getFrontmatterFromFiles([contact.file]))[0]
+    const adapter = adapters[setting.syncSelected];
+    if (adapter) {
+      const result = await vcard.toString([contact.file]);
+      if (result.errors.length > 0) {
+        return;
+      }
+      const res = await adapter.push({
+        uid: frontmatter.data['UID'].split(':').pop(),
+        raw: result.vcards
+      })
+      if (res && "errorMessage" in res) {
+        new Notice(res.errorMessage);
+      }
+    }
+  }
 }
 
-export async function pullFromRemote(contact: Contact) {
+export async function pullFromRemote(href: string): Promise<VCardRaw | undefined> {
+  const remoteRaw = await getRawVcardFromRemote(href);
+
+  if (remoteRaw && "errorMessage" in remoteRaw) {
+    new Notice(remoteRaw.errorMessage);
+    return;
+  }
+
+  return remoteRaw;
+
+}
+
+
+export async function updateFromRemote(contact: Contact) {
   const meta = await getMetaByUID(contact.data['UID'])
+
   if (meta) {
     const remoteRaw = await getRawVcardFromRemote(meta.href);
+
+    if (remoteRaw && "errorMessage" in remoteRaw) {
+      new Notice(remoteRaw.errorMessage);
+      return;
+    }
+
     if (remoteRaw) {
       const remoteVcf = await vcard.parse(remoteRaw.raw).next();
-
-      console.log('local', contact.data);
-      console.log('remote', remoteVcf?.value?.[1]);
 
       if(remoteVcf?.value?.[1] && typeof remoteVcf?.value?.[1] !== 'string') {
         for (const [key, value] of Object.entries(remoteVcf.value?.[1])) {
@@ -94,7 +133,7 @@ export async function pullFromRemote(contact: Contact) {
             break;
           }
 
-          if (!localValue || localValue=== '') {
+          if (!localValue || localValue === '') {
             await updateFrontMatterValue(contact.file, key, value);
             break;
           }
@@ -106,17 +145,13 @@ export async function pullFromRemote(contact: Contact) {
       }
     }
   }
-
 }
-
-
 
 async function getList() {
   const setting = settings.value;
   if (setting) {
     return adapters[setting.syncSelected]?.getMetaList();
   }
-
 }
 
 async function getMetaByUID(uid: string): Promise<VCardMeta | undefined> {
@@ -124,32 +159,12 @@ async function getMetaByUID(uid: string): Promise<VCardMeta | undefined> {
   if (setting) {
     const adapter = adapters[setting.syncSelected];
     if(adapter) {
-      const res = await adapter.getMetaByUid(uid);
-      return res
-    }
-  }
-
-}
-
-/**
- * this function will always try to get the latest metadata
- * from the metadata cache, file system.
- */
-async function singlePush(file: TFile) {
-  const setting = settings.value;
-  if (setting) {
-    const frontmatter = (await getFrontmatterFromFiles([file]))[0]
-    const adapter = adapters[setting.syncSelected];
-
-    if (adapter) {
-      const result = await vcard.toString([file]);
-      if (result.errors.length > 0) {
-        return;
+      const res:VCardMeta | AppHttpResponse | undefined = await adapter.getMetaByUid(uid);
+      if (res && "errorMessage" in res) {
+        new Notice(res.errorMessage);
+        return undefined;
       }
-      await adapter.push({
-        uid: frontmatter.data['UID'].split(':').pop(),
-        raw: result.vcards
-      })
+      return res;
     }
   }
 }

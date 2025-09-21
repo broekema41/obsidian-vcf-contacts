@@ -4,6 +4,7 @@ import { Contact, parseKey } from "src/contacts";
 import { getApp } from "src/context/sharedAppContext";
 import { fileId, openFile } from "src/file/file";
 import { sync } from "src/sync";
+import { updateFromRemote } from "src/sync/sync";
 import { useSyncEnabled } from "src/ui/hooks/syncEnabledHook";
 import Avatar from "src/ui/sidebar/components/Avatar";
 import { CopyableItem } from "src/ui/sidebar/components/CopyableItem";
@@ -174,7 +175,7 @@ export const ContactView = (props: ContactProps) => {
       );
       menu.addItem((item:MenuItem) =>
         item.setSection("vcf-sync-main").setTitle("Pull").setIcon("square-arrow-down").onClick(() =>{
-          sync.pullFromRemote(myContact);
+          sync.updateFromRemote(myContact);
         })
       );
       menu.addItem((item:MenuItem) =>
