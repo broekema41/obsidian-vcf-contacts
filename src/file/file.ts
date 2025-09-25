@@ -155,19 +155,25 @@ export async function openFilePicker(type: string): Promise<string | Blob> {
  * 1) BOM
  * 2) Valid UTF-8 heuristic
  * 3) CHARSET=... token in vCard (v2.1/3.0)
- * 4) Fallback to windows-1252
+ * 4) Fallback to utf-8 for backward compatibility
  */
 function detectVCardEncoding(bytes: Uint8Array): string {
-  const bom = detectBom(bytes);
-  if (bom) return bom;
+  const bomEncoding = detectBom(bytes);
+  if (bomEncoding) {
+     return bomEncoding;
+  }
 
-  if (isLikelyUtf8(bytes)) return "utf-8";
-
+  if (isLikelyUtf8(bytes)) {
+    return "utf-8";
+  }
+  // For old vCard 2.1/3.0, whiche allowed encodings other than utf-8.
+  // It's per-field, but we assume it to be the same for all the fields and match the file encoding; otherwise it's a broken vCard anyway.
   const charset = detectVCardCharsetToken(bytes);
-  if (charset) return normalizeEncodingLabel(charset);
+  if (charset) {
+    return normalizeEncodingLabel(charset);
+  }
 
-  // Common legacy default for Western vCards
-  return "windows-1252";
+  return "utf-8";
 }
 
 function detectBom(bytes: Uint8Array): string | null {
