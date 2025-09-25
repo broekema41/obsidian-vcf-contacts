@@ -195,6 +195,38 @@ function detectBom(bytes: Uint8Array): string | null {
 }
 
 // Simple UTF-8 validator (not perfect, but good heuristic)
+/*
+  What this does:
+  - Scans the byte array left-to-right and checks if it could be valid UTF‑8.
+
+  How it decides:
+  1) ASCII fast-path:
+     - Bytes 0x00–0x7F are plain ASCII and always valid in UTF‑8, so they pass.
+
+  2) Lead byte classification:
+     - If a byte is not ASCII, it must be the lead byte of a multi-byte UTF‑8 sequence.
+     - The code uses the lead-byte ranges to decide how many continuation bytes to expect:
+         0xC2–0xDF → expect 1 continuation byte (2-byte sequence)
+         0xE0–0xEF → expect 2 continuation bytes (3-byte sequence)
+         0xF0–0xF4 → expect 3 continuation bytes (4-byte sequence)
+       Any other non-ASCII lead value is rejected immediately.
+
+     Why start at 0xC2 (and not 0xC0)?
+     - 0xC0 and 0xC1 would allow overlong encodings of ASCII, which UTF‑8 forbids. Excluding them filters those out.
+
+  3) Continuation bytes check:
+     - For the expected number of continuation bytes, each must exist and match the bit pattern 10xxxxxx (i.e., 0x80–0xBF).
+     - If a required continuation is missing or malformed, the function returns false.
+
+  4) Success condition:
+     - If the entire array is consumed following the above rules, it returns true.
+
+  Limitations (why it's a heuristic, not a full validator):
+  - It doesn't check all UTF‑8 edge constraints (e.g., the tighter rules for E0, ED, F0, F4 sequences,
+    surrogate ranges, or every possible overlong form beyond excluding 0xC0–0xC1).
+  - It’s designed to quickly distinguish “likely UTF‑8” from legacy single-byte encodings; rare false positives are possible,
+    but it works well for practical pre-detection before choosing a decoder.
+*/
 function isLikelyUtf8(bytes: Uint8Array): boolean {
   let i = 0;
   while (i < bytes.length) {
