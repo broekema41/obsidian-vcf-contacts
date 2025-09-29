@@ -1,6 +1,6 @@
-import { setIcon, TFile } from "obsidian";
+import { Menu, Notice, setIcon, TFile } from "obsidian";
 import * as React from "react";
-import { Contact, parseKey } from "src/contacts";
+import { Contact, getSubkeyNameFallback, parseKey } from "src/contacts";
 import { getApp } from "src/context/sharedAppContext";
 import { fileId, openFile } from "src/file/file";
 import Avatar from "src/ui/sidebar/components/Avatar";
@@ -159,6 +159,21 @@ export const ContactView = (props: ContactProps) => {
 		return null;
 	};
 
+	const handleContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+		event.preventDefault();
+		const menu = new Menu();
+		for (const [key, value] of Object.entries(contact.data)) {
+			if ((key.startsWith("URL") || key.startsWith("SOCIALPROFILE")) && value.length > 0) {
+				menu.addItem((item) => {
+					const keyParsed = parseKey(key);
+					const keyName = getSubkeyNameFallback(keyParsed);
+					item.setTitle(`Open ${keyName.toLowerCase()}`).onClick(() => window.open(value, "_blank"))
+				});
+			}
+		}
+		menu.showAtPosition({ x: event.pageX, y: event.pageY });
+	}
+
 	return (
 		<div
 			className="contact-card"
@@ -167,7 +182,7 @@ export const ContactView = (props: ContactProps) => {
 		>
 			<div className="content">
 				<div className="inner-card-container">
-					<div className="bizzy-card-container">
+					<div className="bizzy-card-container"  onContextMenu={handleContextMenu}>
 						{renderOrganization(contact.data)}
 						<div className="biz-card-a">
 							<div className="biz-headshot biz-pic-drew">

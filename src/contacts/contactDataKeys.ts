@@ -97,3 +97,13 @@ export function parseKey(input: string): ParsedKey {
 	const { key, index, type } = parseKeyPart(main);
 	return { key, index, type, subkey };
 }
+
+export function getSubkeyNameFallback(key: ParsedKey): String {
+	if (key.subkey != null && key.subkey.length > 0) {
+		return key.subkey;
+	} else if (key.type != null && key.type.length > 0){
+		return key.type;
+	} else {
+		return key.key;
+	}
+}
