@@ -30,13 +30,10 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci
-      
-      - name: Install JSDoc
-        run: npm install --save-dev jsdoc jsdoc-to-markdown better-docs
+        run: npm ci --legacy-peer-deps
       
       - name: Generate JSDoc
-        run: npx jsdoc -c jsdoc.json -r src -d docs/api
+        run: npm run docs
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

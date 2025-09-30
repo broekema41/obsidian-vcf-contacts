@@ -136,8 +136,7 @@ export class VcardFile {
    * tuples of [slug, contactData] for each contact found. The slug is a
    * URL-friendly identifier, and contactData contains the parsed properties.
    * 
-   * @returns {AsyncGenerator<[string | undefined, VCardForObsidianRecord], void, unknown>}
-   *          Async generator yielding [slug, contactData] tuples
+   * @returns Async generator yielding [slug, contactData] tuples
    * 
    * @example
    * ```typescript

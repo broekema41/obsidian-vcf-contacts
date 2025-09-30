@@ -9,6 +9,8 @@
  * @module ContactNoteTypes
  */
 
+import { TFile } from 'obsidian';
+
 /**
  * Gender type for contact classification.
  * 
@@ -56,7 +58,7 @@ export type Contact = {
   /** Parsed frontmatter data from the contact file */
   data: Record<string, any>;
   /** Obsidian TFile reference to the contact file */
-  file: import('obsidian').TFile;
+  file: TFile;
 }
 
 /**
@@ -134,7 +136,7 @@ export interface ParsedRelationship {
   /** Link type (uid or name) */
   linkType?: 'uid' | 'name';
   /** Optional file reference to the related contact */
-  contactFile?: import('obsidian').TFile;
+  contactFile?: TFile;
   /** Optional gender of the related contact */
   gender?: Gender;
 }
@@ -200,7 +202,7 @@ export interface ResolvedContact {
   /** Unique identifier */
   uid: string;
   /** Obsidian file reference */
-  file: import('obsidian').TFile;
+  file: TFile;
   /** Gender classification */
   gender: Gender;
 }

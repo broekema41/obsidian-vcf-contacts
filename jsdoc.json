@@ -1,11 +1,15 @@
 {
   "source": {
     "include": ["src"],
-    "includePattern": ".+\\.ts(doc|x)?$",
+    "includePattern": ".+\\.(jsx|js|ts|tsx)$",
     "excludePattern": "(node_modules|docs|tests)"
+  },
+  "tags": {
+    "allowUnknownTags": true
   },
   "plugins": [
     "plugins/markdown",
+    "node_modules/better-docs/typescript",
     "node_modules/better-docs/category"
   ],
   "opts": {
