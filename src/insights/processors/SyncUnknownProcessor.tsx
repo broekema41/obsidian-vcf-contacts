@@ -14,11 +14,10 @@ const renderGroup = (): JSX.Element | null => {
 
 type PropsRender = {
   queItem: InsightQueItem;
-  setWriting: React.Dispatch<React.SetStateAction<boolean>>
   closeItem: () => void; // Callback for done or close
 };
 
-const render  = ({queItem, setWriting, closeItem}:PropsRender): JSX.Element | null  => {
+const render  = ({queItem, closeItem}:PropsRender): JSX.Element | null  => {
   const app = getApp();
   const mySettings:ContactsPluginSettings = getSettings();
   const addVcardToVault = (href: string) => {
@@ -30,7 +29,6 @@ const render  = ({queItem, setWriting, closeItem}:PropsRender): JSX.Element | nu
         const records = await vcard.parse(rawCard.raw).next();
         if(records?.value?.[1] && typeof records?.value?.[1] !== 'string') {
           const mdContent = mdRender(records.value[1], mySettings.defaultHashtag);
-          setWriting(true);
           createContactFile(app, mySettings.contactsFolder, mdContent, createFileName(records.value[1]))
           closeItem();
         }

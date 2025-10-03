@@ -21,7 +21,6 @@ export interface InsightQueItem {
   data: any | undefined;
   render: (queItem: {
     queItem: InsightQueItem;
-    setWriting: (value: (((prevState: boolean) => boolean) | boolean)) => void;
     closeItem: () => void
   })  => JSX.Element | null;
   renderGroup: ({queItems, closeItem}: PropsRenderGroup) => JSX.Element | null;

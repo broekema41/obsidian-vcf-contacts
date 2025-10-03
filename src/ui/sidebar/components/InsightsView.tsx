@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Contact } from "src/contacts";
 import { InsightQueItem, RunType } from "src/insights/insight.d";
 import { insightService } from "src/insights/insightService";
+import { useOutsideClickHook } from "src/ui/hooks/outsideClickHook";
 
 type ActionProps = {
   setDisplayInsightsView: (displayActionView: boolean) => void;
@@ -24,45 +25,23 @@ function groupByProcessorNameMap(items: InsightQueItem[]): Map<string, InsightQu
 
 export const InsightsView = (props: ActionProps) => {
   const [loading, setLoading] = useState(true);
-  const [writing, setWriting] = useState(false);
-  const writeTimerRef = useRef<number | null>(null);
   const [contacts] = useState(() => props.processContacts);
   const [queItems, setQueItems] = useState<Map<string, InsightQueItem[]>>(new Map());
 
-  useEffect(() => {
-    if(loading) {
-      return;
-    }
-
-    if (writeTimerRef.current !== null) {
-      clearTimeout(writeTimerRef.current);
-    }
-
-    if(writing) {
-      writeTimerRef.current = window.setTimeout(() => {
-        if(!loading) {
-          console.log("setWriting false");
-          setWriting(false);
-          writeTimerRef.current = null;
-        }
-      }, 450);
-      return;
-    }
-
-    // if the detect user is manipulating files manually then we go back to the main view.
-    props.setDisplayInsightsView(false);
-  }, [props.processContacts]);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  useOutsideClickHook(wrapperRef, () => {
+    props.setDisplayInsightsView(false)
+  });
 
   useEffect(() => {
     async function load() {
       try {
-        setWriting(true);
+
         const immediateResults = await insightService.process(contacts, RunType.IMMEDIATELY);
         const batchResults = await insightService.process(contacts, RunType.BATCH);
         const improvementResults = await insightService.process(contacts, RunType.INPROVEMENT);
 
         if (immediateResults.length === 0 && batchResults.length === 0) {
-          setWriting(false);
           setLoading(false);
         }
 
@@ -92,7 +71,6 @@ export const InsightsView = (props: ActionProps) => {
     } else {
       return insights.map((insight, index) => insight.render({
         queItem: insight,
-        setWriting,
         closeItem: removeInsightFromMap(processorName, index)}));
     }
   }
@@ -116,7 +94,7 @@ export const InsightsView = (props: ActionProps) => {
   }
 
   return (
-    <div className="contacts-view">
+    <div ref={wrapperRef} className="contacts-view">
 
       {loading ? (
         <div className="progress-bar progress-bar--contacts">
