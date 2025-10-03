@@ -3,7 +3,7 @@ import * as React from "react";
 import { Contact, getFrontmatterFromFiles, mdRender } from "src/contacts";
 import { vcard } from "src/contacts/vcard";
 import { getApp } from "src/context/sharedAppContext";
-import { getSettings, settings } from "src/context/sharedSettingsContext";
+import { getSettings } from "src/context/sharedSettingsContext";
 import {
   createContactFile,
   createFileName,
@@ -85,13 +85,6 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
       parseContacts();
     }
   }, [myHookSettings]);
-
-  // React.useEffect(() => {
-  //   return () => {
-  //     offSettings();
-  //   };
-	// }, []);
-
 
   React.useEffect(() => {
     props.sideBarApi({ createNewContact });

@@ -8,17 +8,17 @@ import { InsightProcessor, InsightQueItem, RunType } from "src/insights/insight.
 import { ContactsPluginSettings } from "src/settings/settings";
 import { sync } from "src/sync";
 
-
 const renderGroup = (): JSX.Element | null => {
   return null;
 }
 
 type PropsRender = {
   queItem: InsightQueItem;
+  setWriting: React.Dispatch<React.SetStateAction<boolean>>
   closeItem: () => void; // Callback for done or close
 };
 
-const render  = ({queItem, closeItem}:PropsRender): JSX.Element | null  => {
+const render  = ({queItem, setWriting, closeItem}:PropsRender): JSX.Element | null  => {
   const app = getApp();
   const mySettings:ContactsPluginSettings = getSettings();
   const addVcardToVault = (href: string) => {
@@ -30,6 +30,7 @@ const render  = ({queItem, closeItem}:PropsRender): JSX.Element | null  => {
         const records = await vcard.parse(rawCard.raw).next();
         if(records?.value?.[1] && typeof records?.value?.[1] !== 'string') {
           const mdContent = mdRender(records.value[1], mySettings.defaultHashtag);
+          setWriting(true);
           createContactFile(app, mySettings.contactsFolder, mdContent, createFileName(records.value[1]))
           closeItem();
         }
@@ -40,7 +41,6 @@ const render  = ({queItem, closeItem}:PropsRender): JSX.Element | null  => {
   return (
     <div className="action-card">
       <div className="action-card-content">
-        <p><b>Contact Available</b></p>
         <p><b>{queItem.data.fn}</b> is available on the remote server.</p>
       </div>
       <div className="modal-close-button"

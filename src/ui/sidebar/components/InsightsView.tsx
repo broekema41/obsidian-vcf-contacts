@@ -91,6 +91,7 @@ export const InsightsView = (props: ActionProps) => {
     } else {
       return insights.map((insight, index) => insight.render({
         queItem: insight,
+        setWriting,
         closeItem: removeInsightFromMap(processorName, index)}));
     }
   }

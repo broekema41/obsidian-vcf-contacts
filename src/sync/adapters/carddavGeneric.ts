@@ -187,7 +187,8 @@ export function carddavGenericAdapter(): AdapterInterface {
       url: vcfUrl,
       method: 'GET',
       headers: {
-        Authorization: getAuthHeader(settings)
+        Authorization: getAuthHeader(settings),
+        ['Accept']: 'text/vcard; version=4.0; charset=utf-8;'
       }
     });
 
@@ -210,7 +211,7 @@ export function carddavGenericAdapter(): AdapterInterface {
       body: vcard.raw,
       headers: {
         ['Authorization']: getAuthHeader(settings),
-        ['Content-Type']: 'text/vcard; charset=utf-8'
+        ['Content-Type']: 'text/vcard; version=4.0; charset=utf-8;'
       }
     });
   }
@@ -222,7 +223,7 @@ export function carddavGenericAdapter(): AdapterInterface {
       url: vcfUrl,
       method: 'DELETE',
       headers: {
-        Authorization: getAuthHeader(settings)
+        Authorization: getAuthHeader(settings),
       }
     });
   }

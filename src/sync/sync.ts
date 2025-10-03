@@ -83,7 +83,7 @@ export async function pushToRemote(contact: Contact) {
         uid: frontmatter.data['UID'].split(':').pop(),
         raw: result.vcards
       })
-      if (res && "errorMessage" in res) {
+      if (res && "errorMessage" in res && res.errorMessage) {
         new Notice(res.errorMessage);
       }
     }
@@ -97,9 +97,7 @@ export async function pullFromRemote(href: string): Promise<VCardRaw | undefined
     new Notice(remoteRaw.errorMessage);
     return;
   }
-
   return remoteRaw;
-
 }
 
 
@@ -160,11 +158,11 @@ async function getMetaByUID(uid: string): Promise<VCardMeta | undefined> {
     const adapter = adapters[setting.syncSelected];
     if(adapter) {
       const res:VCardMeta | AppHttpResponse | undefined = await adapter.getMetaByUid(uid);
-      if (res && "errorMessage" in res) {
+      if (res && "errorMessage" in res && res.errorMessage) {
         new Notice(res.errorMessage);
         return undefined;
       }
-      return res;
+      return res as VCardMeta | undefined;
     }
   }
 }

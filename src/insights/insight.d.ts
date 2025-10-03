@@ -19,7 +19,11 @@ export interface InsightQueItem {
   file: TFile| undefined;
   message: string;
   data: any | undefined;
-  render: (queItem: PropsRender)  => JSX.Element | null;
+  render: (queItem: {
+    queItem: InsightQueItem;
+    setWriting: (value: (((prevState: boolean) => boolean) | boolean)) => void;
+    closeItem: () => void
+  })  => JSX.Element | null;
   renderGroup: ({queItems, closeItem}: PropsRenderGroup) => JSX.Element | null;
 }
 

@@ -9,7 +9,10 @@ export function uidOutOfString(messyString: string):string|undefined {
   return uid
 }
 
-export function cleanUid(uid: string) {
+export function cleanUid(uid: string | undefined): string {
+  if (!uid) {
+    return '';
+  }
   const parts = uid.split(':');
   return parts.length > 1 ? parts.at(-1)!.trim() : uid;
 }

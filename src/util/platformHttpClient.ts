@@ -19,7 +19,6 @@ const HTTP_STATUS_TITLES: Record<number, string> = {
   404: '404 Not Found',
   500: '500 Internal Server Error',
   502: '502 refused connection or is not available.'
-
 };
 
 export const PlatformHttpClient = {

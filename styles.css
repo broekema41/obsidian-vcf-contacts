@@ -242,9 +242,9 @@
 }
 
 .action-card-content {
-  min-height: 55px;
   flex: 1 1 auto;
   color: var(--metadata-label-text-color);
+  margin-right: 15px;
 }
 
 .action-card-content.action-card-content--no-height {
