@@ -41,10 +41,11 @@ export const InsightsView = (props: ActionProps) => {
     if(writing) {
       writeTimerRef.current = window.setTimeout(() => {
         if(!loading) {
+          console.log("setWriting false");
           setWriting(false);
           writeTimerRef.current = null;
         }
-      }, 250);
+      }, 450);
       return;
     }
 
