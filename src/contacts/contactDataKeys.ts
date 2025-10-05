@@ -96,3 +96,17 @@ export function parseKey(input: string): ParsedKey {
 	const { key, index, type } = parseKeyPart(main);
 	return { key, index, type, subkey };
 }
+
+/**
+ * For quick links in the context meny we fallback
+ * too what we have.
+ */
+export function getSubkeyNameFallback(key: ParsedKey): String {
+	if (key.subkey != null && key.subkey.length > 0) {
+		return key.subkey;
+	} else if (key.type != null && key.type.length > 0){
+		return key.type;
+	} else {
+		return key.key;
+	}
+}

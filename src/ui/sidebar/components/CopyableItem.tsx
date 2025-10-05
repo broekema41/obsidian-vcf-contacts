@@ -17,6 +17,7 @@ export const CopyableItem: React.FC<CopyableItemProps> = ({ value, children }) =
 
 	const handleContextMenu = (event: React.MouseEvent) => {
 		event.preventDefault();
+        event.stopPropagation();
 		const menu = new Menu();
 		menu.addItem((item) =>
 			item.setTitle("Copy to clipboard").setIcon("clipboard").onClick(handleCopy)

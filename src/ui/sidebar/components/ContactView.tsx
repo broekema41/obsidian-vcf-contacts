@@ -1,14 +1,14 @@
-import { Menu, MenuItem, setIcon, TFile } from "obsidian";
+import {Menu, MenuItem, Notice, setIcon, TFile} from "obsidian";
 import * as React from "react";
 import { Contact, parseKey } from "src/contacts";
 import { getApp } from "src/context/sharedAppContext";
 import { fileId, openFile } from "src/file/file";
 import { sync } from "src/sync";
-import { updateFromRemote } from "src/sync/sync";
 import { useSyncEnabled } from "src/ui/hooks/syncEnabledHook";
 import Avatar from "src/ui/sidebar/components/Avatar";
 import { CopyableItem } from "src/ui/sidebar/components/CopyableItem";
 import { getUiName, uiSafeString } from "src/util/nameUtils";
+import {handleContextMenu} from "./ContextMenu";
 
 type ContactProps = {
 	contact: Contact;
@@ -20,13 +20,13 @@ type ContactProps = {
 
 export const ContactView = (props: ContactProps) => {
   const syncEnabled = useSyncEnabled();
-	const {workspace} = getApp();
+	const { workspace } = getApp();
 	const contact = props.contact;
 	const buttons = React.useRef<(HTMLElement | null)[]>([]);
-
   React.useEffect(() => {
 		buttons.current.forEach(setIconForButton);
 	}, [buttons, syncEnabled]);
+
 
   const renderTopThreeItems = (
     base: string,
@@ -163,7 +163,7 @@ export const ContactView = (props: ContactProps) => {
 		return null;
 	};
 
-  const handleSyncContextMenu = (myContact: Contact) => {
+ const handleSyncContextMenu = (myContact: Contact) => {
     return (event: React.MouseEvent) => {
       event.preventDefault();
       event.stopPropagation();
@@ -188,6 +188,10 @@ export const ContactView = (props: ContactProps) => {
 
   };
 
+	const showContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+    handleContextMenu(event, contact);
+	}
+
 	return (
 		<div
 			className="contact-card"
@@ -196,7 +200,7 @@ export const ContactView = (props: ContactProps) => {
 		>
 			<div className="content">
 				<div className="inner-card-container">
-					<div className="bizzy-card-container">
+					<div className="bizzy-card-container"  onContextMenu={showContextMenu}>
 						{renderOrganization(contact.data)}
 						<div className="biz-card-a">
 							<div className="biz-headshot biz-pic-drew">
