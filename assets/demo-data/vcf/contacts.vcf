@@ -265,6 +265,10 @@ TEL;TYPE=HOME:+74951234568
 BDAY:1991-01-05
 URL;TYPE=HOME:https://anya.ru
 URL;TYPE=WORK:https://techsnow.ru/anya
+SOCIALPROFILE;TYPE=Reddit:https://www.reddit.com
+SOCIALPROFILE;TYPE=Linkedin:https://www.linkedin.com
+SOCIALPROFILE;TYPE=小红书:https://play.google.com/store/apps/details/rednote?id=com.xingin.xhs&hl=en_ZA
+SOCIALPROFILE;TYPE=Telegram:https://telegram.org/
 ORG:FrostTech Artisans
 CATEGORIES:Art, Robotics
 VERSION:4.0

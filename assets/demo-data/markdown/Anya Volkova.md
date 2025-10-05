@@ -9,6 +9,10 @@ PHOTO: https://raw.githubusercontent.com/broekema41/obsidian-vcf-contacts/refs/h
 BDAY: 1991-01-05
 "URL[HOME]": https://anya.ru
 "URL[WORK]": https://techsnow.ru/anya
+SOCIALPROFILE[Reddit]: https://www.reddit.com
+SOCIALPROFILE[Linkedin]: https://www.linkedin.com
+SOCIALPROFILE[小红书]: https://play.google.com/store/apps/details/rednote?id=com.xingin.xhs&hl=en_ZA
+SOCIALPROFILE[Telegram]: https://telegram.org/
 ORG: FrostTech Artisans
 "ADR[HOME].STREET": 15 Ice Lane
 "ADR[HOME].LOCALITY": Moscow

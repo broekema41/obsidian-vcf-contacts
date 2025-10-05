@@ -6,6 +6,7 @@ import { fileId, openFile } from "src/file/file";
 import Avatar from "src/ui/sidebar/components/Avatar";
 import { CopyableItem } from "src/ui/sidebar/components/CopyableItem";
 import { getUiName, uiSafeString } from "src/util/nameUtils";
+import {handleContextMenu} from "./ContextMenu";
 
 type ContactProps = {
 	contact: Contact;
@@ -159,19 +160,8 @@ export const ContactView = (props: ContactProps) => {
 		return null;
 	};
 
-	const handleContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
-		event.preventDefault();
-		const menu = new Menu();
-		for (const [key, value] of Object.entries(contact.data)) {
-			if ((key.startsWith("URL") || key.startsWith("SOCIALPROFILE")) && value.length > 0) {
-				menu.addItem((item) => {
-					const keyParsed = parseKey(key);
-					const keyName = getSubkeyNameFallback(keyParsed);
-					item.setTitle(`Open ${keyName.toLowerCase()}`).onClick(() => window.open(value, "_blank"))
-				});
-			}
-		}
-		menu.showAtPosition({ x: event.pageX, y: event.pageY });
+	const showContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+    handleContextMenu(event, contact);
 	}
 
 	return (
@@ -182,7 +172,7 @@ export const ContactView = (props: ContactProps) => {
 		>
 			<div className="content">
 				<div className="inner-card-container">
-					<div className="bizzy-card-container"  onContextMenu={handleContextMenu}>
+					<div className="bizzy-card-container"  onContextMenu={showContextMenu}>
 						{renderOrganization(contact.data)}
 						<div className="biz-card-a">
 							<div className="biz-headshot biz-pic-drew">
