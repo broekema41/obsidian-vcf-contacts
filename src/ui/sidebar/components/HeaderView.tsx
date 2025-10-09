@@ -1,8 +1,9 @@
 import { setIcon } from "obsidian";
-import { Dispatch, SetStateAction } from "react";
 import * as React from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { insightService } from "src/insights/insightService";
+import { insightQueueStore } from "src/insights/insightsQueStore";
 import { Sort } from "src/util/constants";
-
 
 type HeaderProps = {
   onSortChange: React.Dispatch<React.SetStateAction<Sort>>;
@@ -14,13 +15,30 @@ type HeaderProps = {
 }
 
 export const HeaderView = (props: HeaderProps) => {
-	const buttons = React.useRef<(HTMLElement | null)[]>([]);
+	const buttons = useRef<(HTMLElement | null)[]>([]);
+  const [count, setCount] = useState<number>(insightQueueStore.insightQueItemCount.value);
+  const [insightsLoading, setInsightsLoading] = useState<boolean>(insightService.backgroundProcessRunning.value);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		buttons.current.forEach(setIconForButton);
 	}, [buttons]);
 
-	return (
+  useEffect(() => {
+    const unsubscribe = insightQueueStore.insightQueItemCount.subscribe((newValue) => {
+      setCount(newValue);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = insightService.backgroundProcessRunning.subscribe((loading) => {
+      setInsightsLoading(loading);
+    });
+    return () => unsubscribe();
+  }, []);
+
+
+  return (
     <div className="nav-buttons-container">
       <div
         id="create-btn"
@@ -73,16 +91,25 @@ export const HeaderView = (props: HeaderProps) => {
 
       <div className="menu-vert"></div>
 
-      <div
-        id="insights-btn"
-        data-icon="lightbulb"
-        className="clickable-icon nav-action-button"
-        aria-label="Contact insights"
-        ref={(element) => (buttons.current[8] = element)}
-        onClick={() => props.setDisplayInsightsView(true)}/>
+      <div className="badge-wrapper">
+        <div
+          id="insights-btn"
+          data-icon="lightbulb"
+          className={[
+            "clickable-icon",
+            "nav-action-button",
+            insightsLoading && "is-pulsing",
+          ].filter(Boolean).join(" ")}
+          aria-label="Contact insights"
+          ref={(element) => (buttons.current[8] = element)}
+          onClick={() => props.setDisplayInsightsView(true)}/>
+        {count > 0 && (
+          <span className="badge-count">{count}</span>
+        )}
+      </div>
 
     </div>
-	);
+  );
 };
 
 function setIconForButton(button: HTMLElement | null) {

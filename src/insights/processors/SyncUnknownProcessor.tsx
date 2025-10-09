@@ -5,6 +5,7 @@ import { getApp } from "src/context/sharedAppContext";
 import { getSettings } from "src/context/sharedSettingsContext";
 import { createContactFile, createFileName } from "src/file/file";
 import { InsightProcessor, InsightQueItem, RunType } from "src/insights/insight.d";
+import { insightQueueStore } from "src/insights/insightsQueStore";
 import { ContactsPluginSettings } from "src/settings/settings";
 import { sync } from "src/sync";
 
@@ -55,31 +56,31 @@ const render  = ({queItem, closeItem}:PropsRender): JSX.Element | null  => {
 export const SyncUnknownProcessor: InsightProcessor = {
   name: "SyncUnknownProcessor",
   runType: RunType.BATCH,
-  isGrouped: false,
   settingPropertyName: 'SyncUnknownProcessor',
   settingDescription: 'query the configured remote contact server and allow you to decide to import ',
   settingDefaultValue: true,
 
-  async process(contacts:Contact[]): Promise<(InsightQueItem | undefined)[]> {
+  render,
+  renderGroup,
+
+  async process(contacts:Contact[]): Promise<undefined> {
     const activeProcessor = getSettings().processors[`${this.settingPropertyName}`] as boolean;
     if (!activeProcessor ) {
-      return [];
+      return;
     }
     const unknownContacts = await sync.getUnknownFromRemote(contacts);
     if (unknownContacts.length === 0) {
-      return [];
+      return;
     }
-    return unknownContacts.map((unknownContact) => {
-      return {
+
+    unknownContacts.map(async (unknownContact) => {
+      await insightQueueStore.set({
         name: this.name,
         runType: this.runType,
         file: undefined,
         message: `${unknownContact.fn} is available on remote.`,
-        isGrouped: SyncUnknownProcessor.isGrouped,
         data: unknownContact,
-        render,
-        renderGroup
-      }
+      })
     });
   },
 

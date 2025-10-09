@@ -2,6 +2,7 @@ import * as React from "react";
 import { Contact, updateFrontMatterValue } from "src/contacts";
 import { getSettings } from "src/context/sharedSettingsContext";
 import { InsightProcessor, InsightQueItem, PropsRenderGroup, RunType } from "src/insights/insight.d";
+import { insightQueueStore } from "src/insights/insightsQueStore";
 import { generateUUID } from "src/util/vcard";
 
 const renderGroup = ({queItems, closeItem}:PropsRenderGroup): JSX.Element | null  => {
@@ -28,15 +29,17 @@ const render= (): JSX.Element | null => {
 export const UidProcessor: InsightProcessor = {
   name: "UidProcessor",
   runType: RunType.IMMEDIATELY,
-  isGrouped: true,
   settingPropertyName: 'UidProcessor',
   settingDescription: 'Generates a unique identifier for contact when missing.',
   settingDefaultValue: true,
 
-  async process(contacts:Contact[]): Promise<(InsightQueItem | undefined)[]> {
+  render,
+  renderGroup,
+
+  async process(contacts: Contact[]): Promise<undefined> {
     const activeProcessor = getSettings().processors[`${this.settingPropertyName}`] as boolean;
 
-    const queItemsPromises: Promise<InsightQueItem | undefined>[] = contacts.map(async (contact) => {
+    for (const contact of contacts) {
       if (!activeProcessor || contact.data['UID']) {
         return undefined;
       }
@@ -44,22 +47,13 @@ export const UidProcessor: InsightProcessor = {
       const UUID = `urn:uuid:${generateUUID()}`;
       await updateFrontMatterValue(contact.file, 'UID', UUID);
 
-      return {
+      await insightQueueStore.set({
         name: this.name,
         runType: this.runType,
         file: contact.file,
         message: `Generated Unique user identifier for Contact ${contact.file.name}.`,
-        isGrouped: UidProcessor.isGrouped,
         data: undefined,
-        render,
-        renderGroup
-      };
-    });
-
-    return Promise.all(queItemsPromises);
-  },
-
-};
-
-
-
+      });
+    }
+  }
+}

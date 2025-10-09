@@ -346,3 +346,44 @@
 .menu .menu-item[data-section="vcf-sync-danger"] .menu-item-icon {
   color: var(--text-error);
 }
+
+.badge-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.badge-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  color: var(--icon-color-active);
+  background-color: var(--background-modifier-active-hover);
+  /*background-color: var(--interactive-accent);*/
+  /*color: var(--titlebar-background-focused);*/
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 1px 4px;
+  border-radius: 999px;
+  min-width: 16px;
+  text-align: center;
+  box-shadow: 0 0 2px rgba(0,0,0,0.3);
+  pointer-events: none;
+}
+
+.clickable-icon.is-pulsing {
+  opacity: var(--icon-opacity-hover);
+  color: var(--icon-color-active);
+  background-color: var(--background-modifier-active-hover);
+  animation: pulse-color-bg 1.8s infinite ease-in-out;
+}
+
+@keyframes pulse-color-bg {
+  0%, 100% {
+    color: var(--icon-color-active);
+    background-color: var(--background-modifier-active-hover);
+  }
+  50% {
+    color: var(--icon-color-hover, #fff);
+    background-color: var(--background-modifier-active);
+  }
+}

@@ -11,6 +11,7 @@ import {
   openFilePicker,
   saveVcardFilePicker
 } from "src/file/file";
+import { insightService } from "src/insights/insightService";
 import { ContactsPluginSettings } from "src/settings/settings";
 import { useSettings } from "src/ui/hooks/settingsHook";
 import { ContactsListView } from "src/ui/sidebar/components/ContactsListView";
@@ -75,6 +76,7 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
     const contactFiles = findContactFiles(contactsFolder);
 		getFrontmatterFromFiles(contactFiles).then((contactsData) =>{
 			setContacts(contactsData);
+      insightService.setContacts(contactsData);
 		});
 	};
 

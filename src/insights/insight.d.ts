@@ -11,29 +11,26 @@ type PropsRender = {
   closeItem: () => void; // Callback for done or close
 };
 
-
 export interface InsightQueItem {
   name: string;
-  isGrouped: boolean;
   runType: RunType
-  file: TFile| undefined;
+  file: TFile | undefined;
   message: string;
   data: any | undefined;
+}
+
+export interface InsightProcessor {
+  name: string;
   render: (queItem: {
     queItem: InsightQueItem;
     closeItem: () => void
   })  => JSX.Element | null;
   renderGroup: ({queItems, closeItem}: PropsRenderGroup) => JSX.Element | null;
-}
-
-export interface InsightProcessor {
-  name: string;
-  isGrouped: boolean;
   runType: RunType
   settingPropertyName: string;
   settingDescription: string;
   settingDefaultValue: boolean;
-  process(contacts: Contact[]): Promise<(InsightQueItem | undefined)[]>;
+  process(contacts: Contact[]): Promise<undefined>;
 }
 
 

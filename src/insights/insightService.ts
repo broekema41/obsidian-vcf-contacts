@@ -1,34 +1,75 @@
 
+import { signal } from "@preact/signals-core";
 import { Contact } from "src/contacts";
-import { InsighSettingProperties, InsightProcessor, InsightQueItem, RunType } from "src/insights/insight.d";
+import { InsighSettingProperties, InsightProcessor, RunType } from "src/insights/insight.d";
 
+let backgroundTimer: number | null = null;
+let contacts:Contact[] = [];
 const processors = new Map<string, InsightProcessor>();
+const backgroundProcessRunning = signal(false);
 
-function isDefined<T>(value: T | undefined | null): value is T {
-  return value !== undefined && value !== null;
-}
-
-const processContacts  = async (contacts:Contact | Contact[], runType: RunType) => {
-  const insights:InsightQueItem[] = [];
+const processContacts  = async ( runType: RunType) => {
   const normalizedContacts = Array.isArray(contacts) ? contacts : [contacts];
   for (const processor of processors.values()) {
     if (processor.runType === runType) {
-        const que = await processor.process(normalizedContacts)
-        const queItems = que.filter(isDefined);
-        insights.push(...queItems);
+        await processor.process(normalizedContacts)
     }
   }
-  return insights
+}
+
+const processAll = async () => {
+  console.log('processing started');
+  backgroundProcessRunning.value = true;
+  try {
+    await insightService.process(RunType.IMMEDIATELY);
+    await insightService.process(RunType.BATCH);
+    await insightService.process(RunType.INPROVEMENT);
+    backgroundProcessRunning.value = false;
+  } catch (err) {
+    setTimeout(() => {
+      backgroundProcessRunning.value = false;
+    }, 1500);
+    console.warn('While running insights background process and error occurred', err);
+  }
+}
+
+const startBackgroundProcess = () => {
+  if (!backgroundTimer) {
+    // TODO: Every 5 minutes make this a setting at some point.
+    backgroundTimer = window.setInterval(processAll, 5 * 60 * 1000);
+    setTimeout(processAll, 2000); // Run after obsidian is initialized
+  }
 }
 
 export const insightService = {
 
+  backgroundProcessRunning,
+
   register(processor: InsightProcessor) {
     processors.set(processor.name, processor);
+
+    startBackgroundProcess();
   },
 
-  async process(contacts: Contact|Contact[], runType: RunType): Promise<InsightQueItem[]> {
-      return await processContacts(contacts, runType);
+  getProcessorByName(name: string): InsightProcessor | undefined {
+    return processors.get(name);
+  },
+
+  setContacts(currentContacts: Contact[]) {
+    /**
+     * We do some object cloning here just so that the
+     * processors do not accidentally mutate the apps core state
+     */
+    contacts = currentContacts.map((mapContact) => {
+      return Object.assign({}, {
+        file: { ...mapContact.file },
+        data: { ...mapContact.data }
+      });
+    });
+  },
+
+  async process(runType: RunType) {
+      await processContacts(runType);
   },
 
   settings(): InsighSettingProperties[] {
@@ -40,5 +81,4 @@ export const insightService = {
       settingDefaultValue: processor.settingDefaultValue,
     }));
   }
-
 }
