@@ -1,7 +1,6 @@
 BEGIN:VCARD
 N:李;伟;;;
 ADR;TYPE=HOME:;;成都市锦江区熊猫大道300号;成都;;610000;中国
-FN:伟 李
 FN:李伟
 PHOTO:https://raw.githubusercontent.com/broekema41/obsidian-vcf-contacts/refs/heads/master/assets/demo-data/avatars/avatar9.jpg
 EMAIL;TYPE=HOME:liwei@zhuyukeji.cn

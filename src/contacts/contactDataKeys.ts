@@ -23,7 +23,6 @@
  *
  * The parsing functions assume that the input string is well-formed; an error is thrown if a closing bracket is missing.
  */
-import {Notice} from "obsidian";
 
 export interface ParsedKey {
 	key: string;
@@ -38,7 +37,7 @@ export interface ParsedKey {
 function extractSubkey(input: string): { main: string; subkey?: string } {
 	const dotIndex = input.indexOf('.');
 	if (dotIndex === -1) {
-		return { main: input, subkey: ''};
+		return { main: input, subkey: ''};``
 	}
 	return {
 		main: input.substring(0, dotIndex),

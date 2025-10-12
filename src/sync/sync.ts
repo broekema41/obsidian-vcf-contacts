@@ -63,7 +63,11 @@ export async function deleteOnRemote(contact: Contact) {
     const meta = await getMetaByUID(contact.data['UID'])
     const adapter = adapters[setting.syncSelected];
     if (adapter && meta) {
-      return adapter.delete(meta.href);
+      const res =  await adapter.delete(meta.href);
+      if(res.status && (res.status < 200 || res.status > 300)) {
+        new Notice(res.data);
+        return undefined;
+      }
     }
     return undefined;
   }
@@ -83,8 +87,16 @@ export async function pushToRemote(contact: Contact) {
         uid: frontmatter.data['UID'].split(':').pop(),
         raw: result.vcards
       })
+
+
       if (res && "errorMessage" in res && res.errorMessage) {
         new Notice(res.errorMessage);
+        return;
+      }
+
+      if(res.status && (res.status < 200 || res.status > 300)) {
+        new Notice(res.data);
+        return;
       }
     }
   }

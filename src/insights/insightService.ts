@@ -2,6 +2,7 @@
 import { signal } from "@preact/signals-core";
 import { Contact } from "src/contacts";
 import { InsighSettingProperties, InsightProcessor, RunType } from "src/insights/insight.d";
+import {insightQueueStore} from "./insightsQueStore";
 
 let backgroundTimer: number | null = null;
 let contacts:Contact[] = [];
@@ -18,17 +19,17 @@ const processContacts  = async ( runType: RunType) => {
 }
 
 const processAll = async () => {
-  console.log('processing started');
   backgroundProcessRunning.value = true;
   try {
+    insightQueueStore.clear();
     await insightService.process(RunType.IMMEDIATELY);
     await insightService.process(RunType.BATCH);
     await insightService.process(RunType.INPROVEMENT);
-    backgroundProcessRunning.value = false;
-  } catch (err) {
     setTimeout(() => {
       backgroundProcessRunning.value = false;
-    }, 1500);
+    }, 100);
+  } catch (err) {
+    backgroundProcessRunning.value = false;
     console.warn('While running insights background process and error occurred', err);
   }
 }

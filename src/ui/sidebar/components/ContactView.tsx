@@ -1,4 +1,4 @@
-import {Menu, MenuItem, Notice, setIcon, TFile} from "obsidian";
+import {Menu, MenuItem, setIcon, TFile} from "obsidian";
 import * as React from "react";
 import { Contact, parseKey } from "src/contacts";
 import { getApp } from "src/context/sharedAppContext";
@@ -8,6 +8,7 @@ import { useSyncEnabled } from "src/ui/hooks/syncEnabledHook";
 import Avatar from "src/ui/sidebar/components/Avatar";
 import { CopyableItem } from "src/ui/sidebar/components/CopyableItem";
 import { getUiName, uiSafeString } from "src/util/nameUtils";
+
 import {handleContextMenu} from "./ContextMenu";
 
 type ContactProps = {

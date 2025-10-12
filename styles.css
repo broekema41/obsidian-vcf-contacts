@@ -241,6 +241,13 @@
   align-items: normal;
 }
 
+.action-card-actions {
+  display: flex;
+  gap: var(--size-4-2);
+  flex-wrap: wrap;
+  font-size: var(--font-ui-medium);
+}
+
 .action-card-content {
   flex: 1 1 auto;
   color: var(--metadata-label-text-color);

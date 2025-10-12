@@ -1,29 +1,50 @@
 import * as React from "react";
 import { Contact, updateFrontMatterValue } from "src/contacts";
 import { getSettings } from "src/context/sharedSettingsContext";
-import { InsightProcessor, InsightQueItem, PropsRenderGroup, RunType } from "src/insights/insight.d";
+import {InsightProcessor, PropsRender, PropsRenderGroup, RunType} from "src/insights/insight.d";
 import { insightQueueStore } from "src/insights/insightsQueStore";
 import { generateUUID } from "src/util/vcard";
 
-const renderGroup = ({queItems, closeItem}:PropsRenderGroup): JSX.Element | null  => {
+const renderGroup = ({queItems}:PropsRenderGroup): JSX.Element | null  => {
+  const dismissAll = () => {
+    return async (event: React.MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      for (const queItem of queItems) {
+        await insightQueueStore.dismissItem(queItem);
+      }
+    }
+  }
+
   return (
     <div className="action-card">
       <div className="action-card-content">
-        <p><b>{queItems.length} UID's generates</b></p>
-        <p>Unique Contact identifiers generated for your contacts where they where absent.</p>
+        <p><b>{queItems.length} UID's generated</b></p>
+        <p>Unique Contact identifiers generated where they where absent.</p>
       </div>
-      <div className="modal-close-button"
-           tabIndex={0}
-           role="button"
-           aria-label="Close"
-           onClick={closeItem}>
+      <div className="action-card-actions">
+        <button className="action-card-button" onClick={dismissAll()}>
+          dismiss All
+        </button>
       </div>
     </div>
   );
 }
 
-const render= (): JSX.Element | null => {
-  return null;
+const render = ({queItem, dismissItem}: PropsRender): JSX.Element | null => {
+  return (
+    <div className="action-card">
+      <div className="action-card-content">
+        <p><b>{queItem.data.fn}</b> {queItem.message}</p>
+      </div>
+      <div className="modal-close-button"
+           tabIndex={0}
+           role="button"
+           aria-label="Close"
+           onClick={dismissItem}>
+      </div>
+    </div>
+  );
 }
 
 export const UidProcessor: InsightProcessor = {
@@ -37,6 +58,7 @@ export const UidProcessor: InsightProcessor = {
   renderGroup,
 
   async process(contacts: Contact[]): Promise<undefined> {
+
     const activeProcessor = getSettings().processors[`${this.settingPropertyName}`] as boolean;
 
     for (const contact of contacts) {
@@ -51,8 +73,8 @@ export const UidProcessor: InsightProcessor = {
         name: this.name,
         runType: this.runType,
         file: contact.file,
-        message: `Generated Unique user identifier for Contact ${contact.file.name}.`,
-        data: undefined,
+        message: `Now has a Generated Unique user identifier`,
+        data: { name: this.name, uuid: UUID, fn: contact.data['FN']}
       });
     }
   }

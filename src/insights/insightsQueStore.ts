@@ -2,6 +2,7 @@ import { signal } from "@preact/signals-core";
 import { InsightQueItem } from "src/insights/insight";
 
 const store = new Map<string, InsightQueItem>();
+const dismissedItems = new Map<string, string>();
 const insightQueItemCount = signal(0);
 
 async function keyFromData(data: any): Promise<string> {
@@ -23,7 +24,11 @@ async function generateKey(item: InsightQueItem): Promise<string> {
 }
 
 function updateCount() {
-  insightQueItemCount.value = store.size;
+  insightQueItemCount.value = Array.from(
+    new Set(
+      Array.from(store.entries())
+        .filter(([key]) => !dismissedItems.has(key))
+    )).length;
 }
 
 export const insightQueueStore = {
@@ -36,11 +41,18 @@ export const insightQueueStore = {
   },
 
   getProcessorsInStore(): string[] {
-    return Array.from(new Set(Array.from(store.values()).map(i => i.name)));
+    return Array.from(
+      new Set(
+        Array.from(store.entries())
+          .filter(([key]) => !dismissedItems.has(key))
+          .map(([, i]) => i.name)
+    ));
   },
 
   getByName(name: string): InsightQueItem[] {
-    return Array.from(store.values()).filter((i) => i.name === name);
+    return Array.from(store.entries())
+      .filter(([key, i]) => !dismissedItems.has(key) && i.name === name)
+      .map(([, i]) => i);
   },
 
   async has(item: InsightQueItem): Promise<boolean> {
@@ -51,6 +63,12 @@ export const insightQueueStore = {
   async remove(item: InsightQueItem): Promise<void> {
     const key = await generateKey(item);
     store.delete(key);
+    updateCount();
+  },
+
+  async dismissItem(item: InsightQueItem) {
+    const key = await generateKey(item);
+    dismissedItems.set(key, key);
     updateCount();
   },
 
