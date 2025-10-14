@@ -1,0 +1,11 @@
+BEGIN:VCARD
+VERSION:2.1
+FN;CHARSET=windows-1251:Иванов Иван Иванович
+N;CHARSET=windows-1251:Иванов;Иван;Иванович
+TITLE;CHARSET=windows-1251:Работник
+ADR;WORK;CHARSET=windows-1251:;;Улица 1;Город;;;
+NOTE;CHARSET=windows-1251;:Encoded in windows-1251 charset
+EMAIL:example@email.domain
+URL:https://example.domain
+ORG;CHARSET=windows-1251:Организация
+END:VCARD
