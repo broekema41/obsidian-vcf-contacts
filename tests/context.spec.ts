@@ -27,7 +27,7 @@ const mockSettings: ContactsPluginSettings = {
   }
 };
 
-describe('sharedSppContext', () => {
+describe('sharedAppContext', () => {
   afterEach(() => clearApp());
 
   it('stores and retrieves the app instance', () => {
