@@ -52,7 +52,14 @@ vi.mock('src/ui/modals/contactNameModal', () => {
 
 describe('vcard creatEmpty', () => {
   it('should ask for a firstname and lastname ', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
+
     const empty = await vcard.createEmpty();
+
+    expect(warnSpy).toHaveBeenCalled();
+    expect(warnSpy.mock.calls[0][0]).toMatch(/^No name found for record/);
+    warnSpy.mockRestore();
+
     const expectedFields = ['N.PREFIX', 'N.GN', 'N.MN', 'N.FN', 'N.SUFFIX'];
     expectedFields.forEach((field) => {
       expect(empty).toHaveProperty(field);
