@@ -4,6 +4,8 @@ import { insightService } from "src/insights/insightService";
 import { insightQueueStore } from "src/insights/insightsQueStore";
 import { useOutsideClickHook } from "src/ui/hooks/outsideClickHook";
 import { Contact } from "src/contacts";
+import {IconButton} from "./elements/IconButton";
+import {SettingItem} from "./elements/settingItem";
 
 type ActionProps = {
   setDisplayInsightsView: (displayActionView: boolean) => void;
@@ -12,6 +14,9 @@ type ActionProps = {
 
 export const InsightsView = (props: ActionProps) => {
   const [loading, setLoading] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [groupedView, setGroupedView] = useState(true);
+  const [count, setCount] = useState<number>(insightQueueStore.insightQueItemCount.value);
   const [groupInsightItems, setGroupInsightItems] = useState<React.ReactNode[]>([]);
   const [insightItems, setInsightItems] = useState<React.ReactNode[]>([]);
 
@@ -30,7 +35,8 @@ export const InsightsView = (props: ActionProps) => {
 
   useEffect(() => {
     let timeoutId: number | null = null;
-    const unsubscribe = insightQueueStore.insightQueItemCount.subscribe(() => {
+    const unsubscribe = insightQueueStore.insightQueItemCount.subscribe((newValue) => {
+      setCount(newValue);
       if (timeoutId) clearTimeout(timeoutId);
       timeoutId = window.setTimeout(() => {
         renderInsights();
@@ -80,6 +86,29 @@ export const InsightsView = (props: ActionProps) => {
 
   return (
     <div ref={wrapperRef} className="contacts-view">
+      <div className="insights-results">
+        <div className="insights-results-header">
+          <div className="insights-result-count">
+            <span>{count} results</span>
+          </div>
+          <div>
+            <IconButton
+              icon="sliders-horizontal"
+              active={false}
+              onClick={setSettingsOpen}
+            />
+          </div>
+          <div className="contacts-view-close">
+            <div className="modal-close-button" onClick={() => props.setDisplayInsightsView(false)}></div>
+          </div>
+        </div>
+        {settingsOpen ? (
+          <div className="insights-results-settings">
+            <SettingItem name="Groupe insights" active={groupedView} onClick={setGroupedView}></SettingItem>
+          </div>
+        ) : null}
+      </div>
+
 
       {loading ? (
         <div className="progress-bar progress-bar--contacts">
@@ -90,11 +119,8 @@ export const InsightsView = (props: ActionProps) => {
             <div className="progress-bar-subline mod-decrease"></div>
           </div>
         </div>
-      ) : (
-        <div className="contacts-view-close">
-          <div className="modal-close-button" onClick={() => props.setDisplayInsightsView(false)}></div>
-        </div>
-      )}
+      ) : null
+      }
 
       {
         !loading ? (
@@ -109,13 +135,13 @@ export const InsightsView = (props: ActionProps) => {
       }
 
       {
-        !loading && groupInsightItems.length > 0
+        !loading && groupedView && groupInsightItems.length > 0
           ? groupInsightItems
           : null
       }
 
       {
-        !loading && insightItems.length > 0
+        !loading && !groupedView && insightItems.length > 0
           ? insightItems
           : null
       }

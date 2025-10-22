@@ -19,9 +19,40 @@
   scrollbar-gutter: stable;
 }
 
+
+.insights-results {
+  border-bottom: 1px solid var(--background-modifier-border);
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+}
+
+.insights-results-header {
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.insights-result-count {
+  flex-grow: 1;
+}
+
+.insights-results-settings {
+  flex-basis: 100%;
+  margin: var(--size-4-4) var(--size-4-4) 0 0;
+}
+
+.insights-results-settings .setting-item-name {
+  font-size: var(--font-ui-small);
+}
+
 .contacts-view-close {
   position: relative;
-  width: 100%;
+  width: 34px;
   padding-top: 34px;
 }
 

@@ -5,7 +5,7 @@ import { getApp } from "src/context/sharedAppContext";
 import { fileId, openFile } from "src/file/file";
 import { sync } from "src/sync";
 import { useSyncEnabled } from "src/ui/hooks/syncEnabledHook";
-import Avatar from "src/ui/sidebar/components/Avatar";
+import Avatar from "src/ui/sidebar/components/elements/Avatar";
 import { CopyableItem } from "src/ui/sidebar/components/CopyableItem";
 import { getUiName, uiSafeString } from "src/util/nameUtils";
 
