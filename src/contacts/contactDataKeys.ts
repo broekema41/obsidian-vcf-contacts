@@ -23,13 +23,13 @@
  *
  * The parsing functions assume that the input string is well-formed; an error is thrown if a closing bracket is missing.
  */
-
 export interface ParsedKey {
 	key: string;
 	index?: string;
 	type?: string;
 	subkey?: string;
 }
+
 /**
  * Extracts the main part of the string and an optional subkey.
  * The subkey is defined as the portion after the first dot.
@@ -37,7 +37,7 @@ export interface ParsedKey {
 function extractSubkey(input: string): { main: string; subkey?: string } {
 	const dotIndex = input.indexOf('.');
 	if (dotIndex === -1) {
-		return { main: input, subkey: ''};``
+		return { main: input, subkey: ''};
 	}
 	return {
 		main: input.substring(0, dotIndex),
@@ -100,7 +100,7 @@ export function parseKey(input: string): ParsedKey {
  * For quick links in the context meny we fallback
  * too what we have.
  */
-export function getSubkeyNameFallback(key: ParsedKey): String {
+export function getSubkeyNameFallback(key: ParsedKey): string {
 	if (key.subkey != null && key.subkey.length > 0) {
 		return key.subkey;
 	} else if (key.type != null && key.type.length > 0){

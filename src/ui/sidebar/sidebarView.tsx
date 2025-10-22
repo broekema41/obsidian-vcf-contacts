@@ -1,5 +1,4 @@
 import { ItemView, Notice, WorkspaceLeaf } from "obsidian";
-import { createRef } from "react";
 import * as React from "react";
 import { createRoot } from "react-dom/client";
 import { clearApp, setApp } from "src/context/sharedAppContext";

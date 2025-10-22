@@ -3,6 +3,9 @@ import { ContactsPluginSettings } from "src/settings/settings.d";
 
 export const settings = signal<ContactsPluginSettings | undefined>(undefined);
 
+// TODO: Provision defaults  when adding the obsidian get and save data functions.
+// TODO: when we update the values via setSettings we should also save it into state.
+
 export function setSettings(settingsInput: ContactsPluginSettings) {
   // Making sure the signal fires by assigning new object.
   settings.value =  { ...{}, ...settingsInput};
