@@ -1,9 +1,11 @@
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
+import { Contact } from "src/contacts";
+import { getSettings, updateSetting } from "src/context/sharedSettingsContext";
 import { insightService } from "src/insights/insightService";
 import { insightQueueStore } from "src/insights/insightsQueStore";
 import { useOutsideClickHook } from "src/ui/hooks/outsideClickHook";
-import { Contact } from "src/contacts";
+
 import {IconButton} from "./elements/IconButton";
 import {SettingItem} from "./elements/settingItem";
 
@@ -15,7 +17,7 @@ type ActionProps = {
 export const InsightsView = (props: ActionProps) => {
   const [loading, setLoading] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [groupedView, setGroupedView] = useState(true);
+  const [groupedView, setGroupedView] = useState(getSettings().groupInsights);
   const [count, setCount] = useState<number>(insightQueueStore.insightQueItemCount.value);
   const [groupInsightItems, setGroupInsightItems] = useState<React.ReactNode[]>([]);
   const [insightItems, setInsightItems] = useState<React.ReactNode[]>([]);
@@ -24,6 +26,11 @@ export const InsightsView = (props: ActionProps) => {
   useOutsideClickHook(wrapperRef, () => {
     props.setDisplayInsightsView(false)
   });
+
+  async function setAndSaveGroupSetting(groupInsights:boolean) {
+    setGroupedView(groupInsights);
+    await updateSetting('groupInsights', groupInsights);
+  }
 
   useEffect(() => {
     const unsubscribe = insightService.backgroundProcessRunning.subscribe((running) => {
@@ -104,7 +111,7 @@ export const InsightsView = (props: ActionProps) => {
         </div>
         {settingsOpen ? (
           <div className="insights-results-settings">
-            <SettingItem name="Groupe insights" active={groupedView} onClick={setGroupedView}></SettingItem>
+            <SettingItem name="Groupe insights" active={groupedView} onClick={setAndSaveGroupSetting}></SettingItem>
           </div>
         ) : null}
       </div>
