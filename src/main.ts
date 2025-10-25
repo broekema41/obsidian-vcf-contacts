@@ -1,7 +1,7 @@
 import "src/insights/insightLoading";
 
 import { Plugin } from 'obsidian';
-import { DEFAULT_SETTINGS } from "src/settings/setting";
+import { initSettings } from "src/context/sharedSettingsContext";
 import { ContactsSettingTab } from 'src/ui/settings/settingsView';
 import { ContactsView } from "src/ui/sidebar/sidebarView";
 import { CONTACTS_VIEW_CONFIG } from "src/util/constants";
@@ -14,7 +14,7 @@ export default class ContactsPlugin extends Plugin {
 
 	async onload() {
 
-		await this.loadSettings();
+		await initSettings(this.loadData.bind(this), this.saveData.bind(this));
 		this.registerView(
 			CONTACTS_VIEW_CONFIG.type,
 			(leaf) => new ContactsView(leaf, this)
@@ -43,32 +43,10 @@ export default class ContactsPlugin extends Plugin {
         leaf?.createNewContact()
       },
     });
-
-
 	}
 
 	onunload() {}
 
-	async loadSettings() {
-    // Decided to explicitly merge the settings for now to prevent a deep clone function
-    const loaded = await this.loadData() ?? {};
-    this.settings = {
-      ...DEFAULT_SETTINGS,
-      ...loaded,
-      CardDAV: {
-        ...DEFAULT_SETTINGS.CardDAV,
-        ...(loaded.CardDAV ?? {})
-      },
-      processors: {
-        ...DEFAULT_SETTINGS.processors,
-        ...(loaded.processors ?? {})
-      }
-    };
-	}
-
-	async saveSettings() {
-		await this.saveData(this.settings);
-	}
 
 	async activateSidebarView() {
 		if (this.app.workspace.getLeavesOfType(CONTACTS_VIEW_CONFIG.type).length < 1) {

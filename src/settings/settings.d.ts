@@ -8,6 +8,7 @@ export interface ContactsPluginSettings {
   processors: ProcessorsSettings
   syncSelected: SyncSelected;
   syncEnabled: boolean;
+  groupInsights: boolean;
   CardDAV: CardDavSyncSettings;
 }
 

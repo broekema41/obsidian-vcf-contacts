@@ -1,16 +1,8 @@
-import { App } from "obsidian";
 import * as React from "react";
-import { setSettings } from "src/context/sharedSettingsContext";
-import ContactsPlugin from "src/main";
+import { getSettings, setSettings, updateSetting } from "src/context/sharedSettingsContext";
 import { SyncSelected } from "src/settings/settings";
 import { carddavGenericAdapter } from "src/sync/adapters/carddavGeneric";
 import CarddavSettings from "src/ui/settings/components/carddavSettings";
-
-
-interface SynchronizationSettingsProps {
-  plugin: ContactsPlugin;
-  app: App;
-}
 
 const initCardavSettings = {
   addressBookUrl: "",
@@ -19,14 +11,15 @@ const initCardavSettings = {
   authKey: ""
 };
 
-export function SynchronizationSettings({plugin, app}: SynchronizationSettingsProps) {
+export function SynchronizationSettings() {
 
   const [warning, setWarning] = React.useState('');
-  const [syncEnabled, setSyncEnabled] = React.useState<boolean>(plugin.settings.syncEnabled);
-  const [syncSelected, setSyncSelected] = React.useState<SyncSelected>(plugin.settings.syncSelected);
+  const initSettings = getSettings();
+  const [syncEnabled, setSyncEnabled] = React.useState<boolean>(initSettings.syncEnabled);
+  const [syncSelected, setSyncSelected] = React.useState<SyncSelected>(initSettings.syncSelected);
   const [carddavSettings, setCarddavSettings] = React.useState({
     ...initCardavSettings,
-    addressBookUrl: plugin.settings.CardDAV.addressBookUrl
+    addressBookUrl: initSettings.CardDAV.addressBookUrl
   });
 
   const enableSync = async () => {
@@ -46,8 +39,9 @@ export function SynchronizationSettings({plugin, app}: SynchronizationSettingsPr
         return;
       }
 
-      plugin.settings.syncEnabled = true;
-      plugin.settings.CardDAV = {
+      const updateSetting = getSettings();
+      updateSetting.syncEnabled = true;
+      updateSetting.CardDAV = {
         addressBookUrl: carddavSettings.addressBookUrl,
         syncInterval: 900,
         authType: carddavSettings.authKey ? 'apikey' : 'basic',
@@ -55,33 +49,24 @@ export function SynchronizationSettings({plugin, app}: SynchronizationSettingsPr
       };
       setCarddavSettings({
         ...initCardavSettings,
-        addressBookUrl: plugin.settings.CardDAV.addressBookUrl
+        addressBookUrl: updateSetting.CardDAV.addressBookUrl
       });
       setSyncEnabled(true);
       setWarning('');
-      await plugin.saveSettings();
-      setSettings(plugin.settings);
+      await setSettings(updateSetting);
     } catch (err: any) {
       setWarning(`failed to enable connection! ${err?.message || err || 'Unknown error'}.`);
     }
   };
 
-  const disableSync = () => {
-    plugin.settings.syncEnabled = false;
-    plugin.saveSettings();
+  const disableSync = async () => {
     setSyncEnabled(false);
     setSyncSelected('None');
-    setSettings(plugin.settings);
+    await updateSetting('syncEnabled', false)
   }
 
-  // React.useEffect(() => {
-  //   console.log(carddavSettings);
-  //
-  // },[carddavSettings]);
-
   React.useEffect(() => {
-    plugin.settings.syncSelected = syncSelected;
-    plugin.saveSettings();
+    updateSetting('syncSelected', syncSelected)
   }, [syncSelected]);
 
   return (

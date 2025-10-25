@@ -2,6 +2,7 @@
 import { signal } from "@preact/signals-core";
 import { Contact } from "src/contacts";
 import { InsighSettingProperties, InsightProcessor, RunType } from "src/insights/insight.d";
+
 import {insightQueueStore} from "./insightsQueStore";
 
 let backgroundTimer: number | null = null;
@@ -38,7 +39,7 @@ const startBackgroundProcess = () => {
   if (!backgroundTimer) {
     // TODO: Every 5 minutes make this a setting at some point.
     backgroundTimer = window.setInterval(processAll, 5 * 60 * 1000);
-    setTimeout(processAll, 2000); // Run after obsidian is initialized
+    setTimeout(processAll, 3000); // Run after obsidian is initialized
   }
 }
 

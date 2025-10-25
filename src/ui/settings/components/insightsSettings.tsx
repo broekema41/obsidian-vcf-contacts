@@ -1,15 +1,10 @@
 import { Setting } from "obsidian";
 import * as React from "react";
-import { setSettings } from "src/context/sharedSettingsContext";
+import { getSettings, updateSetting } from "src/context/sharedSettingsContext";
 import { InsighSettingProperties } from "src/insights/insight";
 import { insightService } from "src/insights/insightService";
-import ContactsPlugin from "src/main";
 
-interface InsightSettingsProps {
-  plugin: ContactsPlugin;
-}
-
-export function InsightSettings({ plugin }: InsightSettingsProps) {
+export function InsightSettings() {
   const insightsSetting = insightService.settings();
   const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -18,7 +13,7 @@ export function InsightSettings({ plugin }: InsightSettingsProps) {
       insightsSetting.forEach((settingProps :InsighSettingProperties) => {
 
         const settingKey = settingProps.settingPropertyName;
-        const currentValue = plugin.settings.processors[settingKey];
+        const currentValue = getSettings().processors[settingKey];
 
         if (typeof currentValue === 'boolean' && containerRef.current) {
           new Setting(containerRef.current)
@@ -28,9 +23,7 @@ export function InsightSettings({ plugin }: InsightSettingsProps) {
               toggle
                 .setValue(currentValue)
                 .onChange(async (value) => {
-                  plugin.settings.processors[settingKey] = value;
-                  await plugin.saveSettings();
-                  setSettings(plugin.settings);
+                  await updateSetting(`processors.${settingKey}`, value);
                 }));
         }
       })

@@ -13,6 +13,7 @@ export const DEFAULT_SETTINGS: ContactsPluginSettings = {
   processors: insightsSettingDefaults,
   syncSelected: 'None',
   syncEnabled: false,
+  groupInsights: true,
   CardDAV: {
     addressBookUrl: '',
     syncInterval: 900,

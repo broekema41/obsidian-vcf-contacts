@@ -1,16 +1,14 @@
 import { App, Setting } from "obsidian";
 import * as React from "react";
-import { setSettings } from "src/context/sharedSettingsContext";
-import ContactsPlugin from "src/main";
+import { getSettings, updateSetting } from "src/context/sharedSettingsContext";
 import { FolderSuggest } from "src/settings/FolderSuggest";
 
 interface MasterSettingProps {
-  plugin: ContactsPlugin;
   app: App;
 }
 
 
-export function MasterSetting({ plugin, app }: MasterSettingProps) {
+export function MasterSetting({ app }: MasterSettingProps) {
 
   const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -25,19 +23,16 @@ export function MasterSetting({ plugin, app }: MasterSettingProps) {
         "If empty, contacts will be created in the root of your vault."
       );
 
-      const contactsFolder = plugin.settings.contactsFolder;
       new Setting(containerRef.current)
         .setName("Contacts folder location")
         .setDesc(folderDesc)
         .addSearch((cb) => {
-          new FolderSuggest(app, plugin, cb.inputEl);
+          new FolderSuggest(app, cb.inputEl);
           cb.setPlaceholder("Example: Contacts")
-            .setValue(contactsFolder)
+            .setValue(getSettings().contactsFolder)
             .onChange(async(value) => {
               if(value === '') {
-                plugin.settings.contactsFolder = '';
-                await plugin.saveSettings();
-                setSettings(plugin.settings);
+                await updateSetting('contactsFolder', '');
               }
             });
         });
@@ -57,17 +52,14 @@ export function MasterSetting({ plugin, app }: MasterSettingProps) {
         "-sign"
       );
 
-      const defaultHashtag = plugin.settings.defaultHashtag;
       new Setting(containerRef.current)
         .setName("Default hashtags")
         .setDesc(hashtagDesc)
         .addText(text => text
           .setPlaceholder("")
-          .setValue(defaultHashtag)
+          .setValue(getSettings().defaultHashtag)
           .onChange(async (value) => {
-            plugin.settings.defaultHashtag = value;
-            await plugin.saveSettings();
-            setSettings(plugin.settings);
+            await updateSetting('defaultHashtag', value);
           }));
     }
   }, []);

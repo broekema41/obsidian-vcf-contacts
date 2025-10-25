@@ -27,15 +27,9 @@ export class ContactsSettingTab extends PluginSettingTab {
       <>
         <MasterSetting
           app={this.app}
-          plugin={this.plugin}
         />
-        <InsightSettings
-          plugin={this.plugin}
-        />
-        <SynchronizationSettings
-          app={this.app}
-          plugin={this.plugin}
-        />
+        <InsightSettings />
+        <SynchronizationSettings />
       </>
     );
   }
