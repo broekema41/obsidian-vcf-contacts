@@ -29,7 +29,7 @@ export interface InsightProcessor {
   settingPropertyName: string;
   settingDescription: string;
   settingDefaultValue: boolean;
-  process(contacts: Contact[]): Promise<undefined>;
+  process(contacts: Contact[]): Promise<void>;
 }
 
 

@@ -57,13 +57,13 @@ export const UidProcessor: InsightProcessor = {
   render,
   renderGroup,
 
-  async process(contacts: Contact[]): Promise<undefined> {
-
+  async process(contacts: Contact[]): Promise<void> {
     const activeProcessor = getSettings().processors[`${this.settingPropertyName}`] as boolean;
 
     for (const contact of contacts) {
+
       if (!activeProcessor || contact.data['UID']) {
-        return undefined;
+        continue;
       }
 
       const UUID = `urn:uuid:${generateUUID()}`;

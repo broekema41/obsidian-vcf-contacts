@@ -94,7 +94,7 @@ export const SyncUnknownProcessor: InsightProcessor = {
   render,
   renderGroup,
 
-  async process(contacts: Contact[]): Promise<undefined> {
+  async process(contacts: Contact[]): Promise<void> {
     const activeProcessor = getSettings().processors[`${this.settingPropertyName}`] as boolean;
     if (!activeProcessor) {
       return;
