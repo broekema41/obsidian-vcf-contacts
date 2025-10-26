@@ -1,12 +1,12 @@
-import { computed } from "@preact/signals-core";
-import { Notice } from "obsidian";
-import { Contact, getFrontmatterFromFiles, updateFrontMatterValue } from "src/contacts";
-import { vcard } from "src/contacts/vcard";
-import { settings } from "src/context/sharedSettingsContext";
-import { adapters } from "src/sync/adapters";
-import { VCardMeta, VCardRaw } from "src/sync/adapters/adapter";
-import { AppHttpResponse } from "src/util/platformHttpClient";
-import { cleanUid } from "src/util/vcard";
+import {computed} from "@preact/signals-core";
+import {Notice} from "obsidian";
+import {Contact, getFrontmatterFromFiles, updateFrontMatterValue} from "src/contacts";
+import {vcard} from "src/contacts/vcard";
+import {settings} from "src/context/sharedSettingsContext";
+import {adapters} from "src/sync/adapters";
+import {VCardMeta, VCardRaw} from "src/sync/adapters/adapter";
+import {AppHttpResponse} from "src/util/platformHttpClient";
+import {cleanUid} from "src/util/vcard";
 
 export const enabled = computed(() => settings.value?.syncEnabled ?? false);
 
@@ -28,7 +28,6 @@ function hasFnMatch(remoteContact: VCardMeta, currentContacts: Contact[]) {
 
 export async function getUnknownFromRemote(currentContacts: Contact[]): Promise<VCardMeta[]> {
   const fullContactList = await getList();
-  console.log('fullContactList', fullContactList);
   if (fullContactList && "errorMessage" in fullContactList) {
     new Notice(fullContactList.errorMessage);
     return [];
@@ -38,12 +37,9 @@ export async function getUnknownFromRemote(currentContacts: Contact[]): Promise<
     return [];
   }
 
-  const unknownRemoteContacts = fullContactList.filter((remoteContact) => {
+  return fullContactList.filter((remoteContact) => {
     return !hasUidMatch(remoteContact, currentContacts) && !hasFnMatch(remoteContact, currentContacts);
-  })
-
-  console.log(unknownRemoteContacts);
-  return unknownRemoteContacts;
+  });
 }
 
 export async function getRawVcardFromRemote(href: string) {

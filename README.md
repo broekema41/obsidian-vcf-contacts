@@ -133,12 +133,18 @@ You can attach profile pictures using:
 ---
 
 <!-- TOC --><a name="-quick-actions"></a>
-### 📞 Quick Actions
+### 📞 Actions available on the card
 
-- **Click to Call**: Phone numbers auto-open your default dialer
-- **Click to Email**: Launches your email client
-- **Right-click** any contact property → **Copy to Clipboard**
+![VCF Contacts card actions](assets/card-functionality.png)
 
+1. **left-click** Open contact markdown note
+2. **Click to Call**: Phone numbers auto-open your default dialer
+3. **Click to Email**: Launches your email client
+4. **Right-click** any contact property → **Copy to Clipboard**
+5. **Right-click** Open Social Links
+6. **left-click** contact server sync when active
+7. **left-click** export as .vcf file
+8. **left-click** process and import avatar from image file
 ---
 
 <!-- TOC --><a name="-create-a-new-contact"></a>
