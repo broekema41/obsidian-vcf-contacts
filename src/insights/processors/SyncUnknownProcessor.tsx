@@ -94,11 +94,19 @@ export const SyncUnknownProcessor: InsightProcessor = {
   render,
   renderGroup,
 
+
   async process(contacts: Contact[]): Promise<void> {
-    const activeProcessor = getSettings().processors[`${this.settingPropertyName}`] as boolean;
-    if (!activeProcessor) {
+    function isEnabled() {
+      const setting = getSettings();
+      const processorActive = setting.processors[`${this.settingPropertyName}`] as boolean;
+      const syncEnabled = setting.syncEnabled;
+      return processorActive && syncEnabled;
+    }
+
+    if (!isEnabled()) {
       return;
     }
+
     const unknownContacts = await sync.getUnknownFromRemote(contacts);
     if (unknownContacts.length === 0) {
       return;
