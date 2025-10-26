@@ -96,14 +96,14 @@ export const SyncUnknownProcessor: InsightProcessor = {
 
 
   async process(contacts: Contact[]): Promise<void> {
-    function isEnabled() {
+    function isEnabled(settingPropertyName: string) {
       const setting = getSettings();
-      const processorActive = setting.processors[`${this.settingPropertyName}`] as boolean;
+      const processorActive = setting.processors[`${settingPropertyName}`] as boolean;
       const syncEnabled = setting.syncEnabled;
       return processorActive && syncEnabled;
     }
 
-    if (!isEnabled()) {
+    if (!isEnabled(this.settingPropertyName)) {
       return;
     }
 
