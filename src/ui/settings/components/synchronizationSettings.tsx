@@ -72,7 +72,9 @@ export function SynchronizationSettings() {
   }, [syncSelected]);
 
   React.useEffect(() => {
-    disableSync();
+    if(isDisabled) {
+      disableSync();
+    }
   }, [isDisabled]);
 
   return (
