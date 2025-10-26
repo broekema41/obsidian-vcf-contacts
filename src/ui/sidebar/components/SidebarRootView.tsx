@@ -37,7 +37,7 @@ const importVCFContacts = async (fileContent: string, app: App, settings: Contac
     if (slug) {
       const mdContent = mdRender(record, settings.defaultHashtag);
       const filename = slug + '.md';
-      createContactFile(app, settings.contactsFolder, mdContent, filename);
+      await createContactFile(app, settings.contactsFolder, mdContent, filename);
       imported++;
     } else {
       // Contact has no valid name/slug
@@ -131,7 +131,7 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
   async function createNewContact() {
       const records = await vcard.createEmpty();
       const mdContent = mdRender(records, mySettings.defaultHashtag);
-      createContactFile(app, mySettings.contactsFolder, mdContent, createFileName(records))
+      await createContactFile(app, mySettings.contactsFolder, mdContent, createFileName(records))
   }
 
 	return (

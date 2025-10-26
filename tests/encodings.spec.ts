@@ -17,7 +17,6 @@ describe('parseDifferentEncodings', () => {
     const result = await parseTextFile(data)
 
     expect(result).toBe(expectedData);
-
   })
 
   it('should parse windows-1251 vCards correctly', async () => {

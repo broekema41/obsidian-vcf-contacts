@@ -18,7 +18,7 @@ const ImportUnknownVcardToVault = async (queItem: InsightQueItem) => {
     const records = await vcard.parse(rawCard.raw).next();
     if (records?.value?.[1] && typeof records?.value?.[1] !== 'string') {
       const mdContent = mdRender(records.value[1], mySettings.defaultHashtag);
-      createContactFile(app, mySettings.contactsFolder, mdContent, createFileName(records.value[1]))
+      await createContactFile(app, mySettings.contactsFolder, mdContent, createFileName(records.value[1]))
       await insightQueueStore.remove(queItem);
     }
   }
