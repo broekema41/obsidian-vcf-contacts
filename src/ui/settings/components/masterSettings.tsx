@@ -61,6 +61,7 @@ export function MasterSetting({ app }: MasterSettingProps) {
           .onChange(async (value) => {
             await updateSetting('defaultHashtag', value);
           }));
+
     }
   }, []);
 

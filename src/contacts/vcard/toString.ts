@@ -34,13 +34,14 @@ function renderStructuredLines(structuredFields:[string, string][]):string[] {
 }
 
 function renderSingleKey([key, value]:[string, string]):string  {
-	const keyObj = parseKey(key);
+  const keyObj = parseKey(key);
 	const type = keyObj.type ? `;TYPE=${keyObj.type}` : '';
 	return `${keyObj.key}${type}:${value}`;
 }
 
 function generateVCard(file: TFile): string {
   const { metadataCache } = getApp();
+
   const frontMatter = metadataCache.getFileCache(file)?.frontmatter;
   if (!frontMatter) {
     throw new Error('No frontmatter found.');
@@ -60,7 +61,7 @@ function generateVCard(file: TFile): string {
       singleLineFields.push([key, value]);
     }
   });
-  
+
   if (!singleLineFields.some(([key]) => key === 'FN')) {
     singleLineFields.push(['FN', file.basename]);
   }
