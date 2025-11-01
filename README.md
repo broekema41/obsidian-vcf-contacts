@@ -375,7 +375,7 @@ You can self-host or use cardav provider. There are many, some popular options:
 
 #### Synchronization Settings
 
-In the plugin setting page select "sync method" CardDav. Here you can fill in the Address Book URL and credentials. pressing Enable button will test the connection and enable the sync when ok 
+In the plugin setting page select "sync method" CardDav. Here you can fill in the Address Book URL and credentials. pressing "Enable" button will test the connection and enable the sync when ok 
 
 * Basic authentication (username + password)
 * API key authentication
