@@ -307,6 +307,8 @@ Here’s a breakdown of supported vCard fields and their **human-readable meanin
 
 Photo's avatars can also be imported from file and will be resized so that they become a integrated part of the contact markdown file by default. 
 
+💡 Heads-up: The PHOTO field is a bit of a troublemaker when it comes to sync, tools, app interoperability. if there is a avatar loaded into obsidian we will not overwrite it with external data.
+
 | **vCard Field**  | **Readable Name**      | **Example**                                |
 |------------------|------------------------|--------------------------------------------|
 | `PHOTO`          | Profile Picture URL    | `https://example.com/photos/foo-bar.jpg`   |
@@ -316,13 +318,14 @@ Photo's avatars can also be imported from file and will be resized so that they 
 <!-- TOC --><a name="-categorization-metadata"></a>
 ### 🗂️ Categorization & Metadata
 
-| **vCard Field** | **Readable Name**         | **Example**                        |
-|-----------------|--------------------------|------------------------------------|
-| `CATEGORIES`     | Tags / Categories        | `Work, Friends`                    |
-| `CLASS`          | Privacy Classification   | `public`, `private`                |
-| `REV`            | Last Updated Timestamp   | `20240312T123456Z` (ISO 8601)      |
-| `SOURCE`         | vCard Source Link        | `https://example.com/foo-bar.vcf`  |
-| `UID`            | Unique Contact ID        | `foo-bar-uuid-1234`                |
+| **vCard Field** | **Readable Name**                            | **Example**                        |
+|-----------------|----------------------------------------------|------------------------------------|
+| `CATEGORIES`    | Tags / Categories                            | `Work, Friends`                    |
+| `CLASS`         | Privacy Classification                       | `public`, `private`                |
+| `KIND`          | individual, group, organization or location | `public`, `private`                |
+| `REV`           | Last Updated Timestamp                       | `20240312T123456Z` (ISO 8601)      |
+| `SOURCE`        | vCard Source Link                            | `https://example.com/foo-bar.vcf`  |
+| `UID`           | Unique Contact ID                            | `foo-bar-uuid-1234`                |
 
 ---
 
@@ -340,6 +343,44 @@ This plugin solves that beautifully. ✨
 ✔ **Feels native, modern, and fun to use.**
 
 Start using the plugin today and share your experience in the [💬 GitHub Discussions](https://github.com/broekema41/obsidian-vcf-contacts/discussions)!
+
+---
+
+## 🌍 Access up to date Contacts on Devices (IOS, Android) and apps. 
+
+This feature is for the slightly tech-savvy... or you are lucky enough to have a privacy conscious tech friend nearby!
+We assume you have a CardDAV server running, know how to spin one up, or use a hosted service that does the job for you.
+
+A typical setup looks like this:
+```markdown
+Obsidian VCF Contacts Plugin
+        ↓
+Contacts DAV Server
+        ↓
+ ├── DAVx⁵ → Android Contacts (read only) 
+ ├── iOS Contacts (read only)
+ └── Thunderbird (or any CardDAV-capable email client) (read only) 
+```
+
+![VCF Contacts Plugin carddav end result](assets/vcf-contacts-plugin-with-carddav.jpg)
+
+#### CardDAV Server Options
+
+You can self-host or use cardav provider. There are many, some popular options:
+
+* **Baïkal** lightweight and easy docker container to run
+* **Radicale** minimal, Python-based
+* **Nextcloud Contacts** a popular alternative cloud service
+* **SOGo** open-source groupware server
+
+#### Synchronization Settings
+
+In the plugin setting page select "sync method" CardDav. Here you can fill in the Address Book URL and credentials. pressing Enable button will test the connection and enable the sync when ok 
+
+* Basic authentication (username + password)
+* API key authentication
+
+OpenID Connect (OAuth2) is not supported at this time.
 
 ---
 
