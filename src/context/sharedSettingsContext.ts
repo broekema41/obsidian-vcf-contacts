@@ -1,27 +1,68 @@
+import { signal } from "@preact/signals-core";
+import { DEFAULT_SETTINGS } from "src/settings/setting";
 import { ContactsPluginSettings } from "src/settings/settings.d";
-type SettingsListener = (settings: ContactsPluginSettings) => void;
+import { deepCloneObject } from "src/util/deepCloneObject";
 
-let _settings: ContactsPluginSettings | undefined
-const _listeners = new Set<SettingsListener>();
+export const settings = signal<ContactsPluginSettings | undefined>(undefined);
+let saveData: (data: any) => Promise<void>;
 
-export function setSettings(settings: ContactsPluginSettings) {
-  _settings = settings
-  _listeners.forEach((listener) => listener(settings));
+export async function initSettings(
+  loadData: () => Promise<any>,   // a callable async function
+  mySaveData: (data: any) => Promise<void> // another callable async function
+) {
+  saveData = mySaveData;
+  const loaded = await loadData() ?? {};
+  const initializedSettings = {
+      ...DEFAULT_SETTINGS,
+      ...loaded,
+      CardDAV: {
+        ...DEFAULT_SETTINGS.CardDAV,
+        ...(loaded.CardDAV ?? {})
+      },
+      processors: {
+        ...DEFAULT_SETTINGS.processors,
+        ...(loaded.processors ?? {})
+      }
+    };
+    await setSettings(initializedSettings);
+}
+
+export async function updateSetting(path: string, value: string | boolean) {
+  const updated = deepCloneObject(getSettings()); // guaranteed new reference
+  const keys = path.split(".");
+  let target: any = updated;
+
+  for (let i = 0; i < keys.length - 1; i++) {
+    const key = keys[i];
+    if (!(key in target) || typeof target[key] !== "object" || target[key] === null) {
+      throw new Error(`Invalid settings path: ${path}`);
+    }
+    target = target[key];
+  }
+
+  const lastKey = keys[keys.length - 1];
+  if (!(lastKey in target)) {
+    throw new Error(`Invalid settings path: ${path} (missing final key "${lastKey}")`);
+  }
+
+  target[lastKey] = value;
+  await setSettings(updated);
+}
+
+export async function setSettings(settingsInput: ContactsPluginSettings) {
+  if (!saveData) throw new Error('Plugin context has not been set.')
+  // Making sure the signal fires by assigning new object.
+  const updatedSettings = deepCloneObject(settingsInput);
+  await saveData(updatedSettings)
+  settings.value = updatedSettings;
 }
 
 export function getSettings(): ContactsPluginSettings {
-  if (!_settings) {
-    throw new Error('Plugin context has not been set.')
-  }
-  return _settings
+  const current = settings.peek(); // avoid tracking if used in non-reactive contexts
+  if (!current) throw new Error('Plugin context has not been set.')
+  return current;
 }
 
 export function clearSettings() {
-  _settings = undefined;
-  _listeners.clear();
-}
-
-export function onSettingsChange(listener: SettingsListener) {
-  _listeners.add(listener);
-  return () => _listeners.delete(listener);
+  settings.value = undefined;
 }

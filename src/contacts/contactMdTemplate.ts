@@ -74,8 +74,8 @@ export function mdRender(record: Record<string, any>, hashtags: string): string 
 `) : '';
 	let additionalTags = ''
 	if (recordWithoutNote.CATEGORIES) {
-		const tempTags= recordWithoutNote.CATEGORIES.split(',')
-		additionalTags = `#${tempTags.join(' #')}`
+		const tempTags= recordWithoutNote.CATEGORIES.split(',').map((tag:string) => `#${tag.trim()}`);
+		additionalTags = `${tempTags.join(' ')}`
 	}
 
 	// Combine all groups into a single object for YAML serialization

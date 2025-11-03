@@ -1,16 +1,14 @@
 import { AbstractInputSuggest, App, TFolder } from 'obsidian';
-import { setSettings } from "src/context/sharedSettingsContext";
-import ContactsPlugin from "src/main";
+import { updateSetting } from "src/context/sharedSettingsContext";
+import { insightQueueStore } from "src/insights/insightsQueStore";
 
 export class FolderSuggest extends AbstractInputSuggest<string> {
   folders: string[];
   private inputEl: HTMLInputElement;
-  private plugin: ContactsPlugin;
 
-  constructor(app: App, plugin: ContactsPlugin, inputEl: HTMLInputElement) {
+  constructor(app: App, inputEl: HTMLInputElement) {
     super(app, inputEl);
     this.inputEl = inputEl;
-    this.plugin = plugin;
     this.folders = this.getAllFolderPaths().filter(folder => folder.toLowerCase() !== '/');
   }
 
@@ -33,11 +31,9 @@ export class FolderSuggest extends AbstractInputSuggest<string> {
     // Trim folder and Strip ending slash if there
     let value = folder.trim()
     value = value.replace(/\/$/, "");
-    this.plugin.settings.contactsFolder = value;
-    this.plugin.saveSettings().then(() => {
-      setSettings(this.plugin.settings);
-      this.close();
-    });
+    updateSetting('contactsFolder', value);
+    insightQueueStore.clear();
+    this.close();
   }
 
 }

@@ -3,8 +3,7 @@ import * as React from "react";
 import { Contact, getFrontmatterFromFiles, mdRender } from "src/contacts";
 import { vcard } from "src/contacts/vcard";
 import { getApp } from "src/context/sharedAppContext";
-import { getSettings, onSettingsChange } from "src/context/sharedSettingsContext";
-import { ContactsPluginSettings } from "src/settings/settings.d";
+import { getSettings } from "src/context/sharedSettingsContext";
 import {
   createContactFile,
   createFileName,
@@ -12,6 +11,9 @@ import {
   openFilePicker,
   saveVcardFilePicker
 } from "src/file/file";
+import { insightService } from "src/insights/insightService";
+import { ContactsPluginSettings } from "src/settings/settings";
+import { useSettings } from "src/ui/hooks/settingsHook";
 import { ContactsListView } from "src/ui/sidebar/components/ContactsListView";
 import { HeaderView } from "src/ui/sidebar/components/HeaderView";
 import { InsightsView } from "src/ui/sidebar/components/InsightsView";
@@ -35,7 +37,7 @@ const importVCFContacts = async (fileContent: string, app: App, settings: Contac
     if (slug) {
       const mdContent = mdRender(record, settings.defaultHashtag);
       const filename = slug + '.md';
-      createContactFile(app, settings.contactsFolder, mdContent, filename);
+      await createContactFile(app, settings.contactsFolder, mdContent, filename);
       imported++;
     } else {
       // Contact has no valid name/slug
@@ -54,11 +56,16 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
   const [contacts, setContacts] = React.useState<Contact[]>([]);
   const [displayInsightsView, setDisplayInsightsView] = React.useState<boolean>(false);
 	const [sort, setSort] = React.useState<Sort>(Sort.NAME);
-	let settings = getSettings();
+  let mySettings:ContactsPluginSettings = getSettings();
+  const myHookSettings: ContactsPluginSettings|undefined = useSettings();
 
 	const parseContacts = () => {
+    if (!mySettings) {
+      return;
+    }
+
 		const contactsFolder = vault.getAbstractFileByPath(
-			normalizePath(settings.contactsFolder)
+			normalizePath(mySettings.contactsFolder)
 		)
 
 		if (!(contactsFolder instanceof TFolder)) {
@@ -69,21 +76,17 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
     const contactFiles = findContactFiles(contactsFolder);
 		getFrontmatterFromFiles(contactFiles).then((contactsData) =>{
 			setContacts(contactsData);
+      insightService.setContacts(contactsData);
 		});
 	};
 
-	React.useEffect(() => {
-		parseContacts();
-    const offSettings = onSettingsChange(() => {
-      settings = getSettings();
-      parseContacts.call(this);
-    });
-
-    return () => {
-      offSettings();
-    };
-	}, []);
-
+  React.useEffect(() => {
+    if (myHookSettings !== undefined) {
+      // Run your function here, e.g., parseContacts
+      mySettings = myHookSettings;
+      parseContacts();
+    }
+  }, [myHookSettings]);
 
   React.useEffect(() => {
     props.sideBarApi({ createNewContact });
@@ -109,7 +112,7 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
 			vault.off("rename", updateFiles);
 			vault.off("delete", updateFiles);
 		};
-	}, [vault, settings.contactsFolder]);
+	}, [vault, mySettings.contactsFolder]);
 
 
   React.useEffect(() => {
@@ -127,8 +130,8 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
 
   async function createNewContact() {
       const records = await vcard.createEmpty();
-      const mdContent = mdRender(records, settings.defaultHashtag);
-      createContactFile(app, settings.contactsFolder, mdContent, createFileName(records))
+      const mdContent = mdRender(records, mySettings.defaultHashtag);
+      await createContactFile(app, mySettings.contactsFolder, mdContent, createFileName(records))
   }
 
 	return (
@@ -146,7 +149,7 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
                 onSortChange={setSort}
                 importVCF={() => {
                   openFilePicker('.vcf').then(async (fileContent: string) => {
-                    await importVCFContacts(fileContent, app, settings);
+                    await importVCFContacts(fileContent, app, mySettings);
                   })
                 }}
                 exportAllVCF={async() => {
@@ -192,7 +195,7 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
               }} />
           :
             <>
-              {!settings.contactsFolder ?
+              {!mySettings.contactsFolder ?
                 <div className="action-card">
                   <div className="action-card-content">
                     <p>

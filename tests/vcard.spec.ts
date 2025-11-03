@@ -97,7 +97,7 @@ describe('vcard parse', () => {
     const result = await parseValidVCards(vcf);
     expect(result[0]['N.GN']).toBe('Huntelaar');
     expect(result[0]['N.FN']).toBe('Jan');
-    expect(result[0]['PHOTO']).toEqual('data:image/type=jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAAAD/2wCEAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ');
+    expect(result[0]['PHOTO']).toEqual('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAAAD/2wCEAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ');
     expect(result[0]['VERSION']).toBe('4.0');
   });
 

@@ -1,36 +1,47 @@
 import * as React from "react";
 import { Contact, updateFrontMatterValue } from "src/contacts";
 import { getSettings } from "src/context/sharedSettingsContext";
-import { InsightProcessor, InsightQueItem, RunType } from "src/insights/insight.d";
+import {InsightProcessor, PropsRender, PropsRenderGroup, RunType} from "src/insights/insight.d";
+import { insightQueueStore } from "src/insights/insightsQueStore";
+import { generateUUID } from "src/util/vcard";
 
-// Zero dependency uuid generator as its not used for millions of records
-const generateUUID = (): string => {
-  const timestamp = Date.now().toString(16).padStart(12, "0");
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === "x" ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  }).replace(/^(.{24})/, (_, p1) => {
-    return timestamp + p1.slice(timestamp.length);
-  });
-}
+const renderGroup = ({queItems}:PropsRenderGroup): JSX.Element | null  => {
+  const dismissAll = () => {
+    return async (event: React.MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      for (const queItem of queItems) {
+        await insightQueueStore.dismissItem(queItem);
+      }
+    }
+  }
 
-const renderGroup = (queItems: InsightQueItem[]):JSX.Element => {
   return (
     <div className="action-card">
       <div className="action-card-content">
-        <p><b>{queItems.length} UID's generates</b></p>
-        <p>Unique Contact identifiers generated for your contacts where they where absent.</p>
+        <p><b>{queItems.length} UID's generated</b></p>
+        <p>Unique Contact identifiers generated where they where absent.</p>
+      </div>
+      <div className="action-card-actions">
+        <button className="action-card-button" onClick={dismissAll()}>
+          dismiss All
+        </button>
       </div>
     </div>
   );
 }
 
-const render = (queItem: InsightQueItem):JSX.Element => {
+const render = ({queItem, dismissItem}: PropsRender): JSX.Element | null => {
   return (
     <div className="action-card">
       <div className="action-card-content">
-        <p>{queItem.message}</p>
+        <p><b>{queItem.data.fn}</b> {queItem.message}</p>
+      </div>
+      <div className="modal-close-button"
+           tabIndex={0}
+           role="button"
+           aria-label="Close"
+           onClick={dismissItem}>
       </div>
     </div>
   );
@@ -39,30 +50,32 @@ const render = (queItem: InsightQueItem):JSX.Element => {
 export const UidProcessor: InsightProcessor = {
   name: "UidProcessor",
   runType: RunType.IMMEDIATELY,
-  settingPropertyName: "UIDProcessor",
-  settingDescription: "Automatically generates a unique identifier (UID) for contact when missing. (e.g. when the contact is created manually)",
+  settingPropertyName: 'UidProcessor',
+  settingDescription: 'Generates a unique identifier for contact when missing.',
   settingDefaultValue: true,
 
-  async process(contact:Contact): Promise<InsightQueItem | undefined> {
-    const activeProcessor = getSettings()[`${this.settingPropertyName}`] as boolean;
-    if (!activeProcessor || contact.data["UID"]) {
-      return Promise.resolve(undefined);
+  render,
+  renderGroup,
+
+  async process(contacts: Contact[]): Promise<void> {
+    const activeProcessor = getSettings().processors[`${this.settingPropertyName}`] as boolean;
+
+    for (const contact of contacts) {
+
+      if (!activeProcessor || contact.data['UID']) {
+        continue;
+      }
+
+      const UUID = `urn:uuid:${generateUUID()}`;
+      await updateFrontMatterValue(contact.file, 'UID', UUID);
+
+      await insightQueueStore.set({
+        name: this.name,
+        runType: this.runType,
+        file: contact.file,
+        message: `Now has a Generated Unique user identifier`,
+        data: { name: this.name, uuid: UUID, fn: contact.data['FN']}
+      });
     }
-
-    const UUID = `urn:uuid:${generateUUID()}`
-    await updateFrontMatterValue(contact.file, "UID", UUID)
-
-    return Promise.resolve({
-      name: this.name,
-      runType: this.runType,
-      file: contact.file,
-      message: `A UID has been generated for contact ${contact.file.name}!`,
-      render,
-      renderGroup
-    });
-  },
-
-};
-
-
-
+  }
+}

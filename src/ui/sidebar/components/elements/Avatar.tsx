@@ -1,7 +1,5 @@
-import { init } from "es-module-lexer";
 import * as React from "react";
-import { photoLineFromV3toV4 } from "src/util/photoLineFromV3toV4";
-
+import { photoLineToV4 } from "src/util/photoLine";
 
 interface AvatarProps {
 	photoUrl?: string;
@@ -28,7 +26,7 @@ export const Avatar = (props: AvatarProps) => {
 		<div className="avatar-initials">
 			{props.photoUrl && !hasImageError ? (
 				<img
-					src={photoLineFromV3toV4(props.photoUrl)}
+					src={photoLineToV4(props.photoUrl) ? photoLineToV4(props.photoUrl) : props.photoUrl }
 					onError={() => setHasImageError(true)}
 				/>
 			) : (

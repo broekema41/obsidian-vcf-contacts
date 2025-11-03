@@ -1,7 +1,7 @@
 import { VCardForObsidianRecord, VCardSupportedKey } from "src/contacts/vcard";
 import { StructuredFields } from "src/contacts/vcard/shared/structuredFields";
 import { createNameSlug } from "src/util/nameUtils";
-import { photoLineFromV3toV4 } from "src/util/photoLineFromV3toV4";
+import { photoLineToV4 } from "src/util/photoLine";
 
 function unfoldVCardLines(vCardData: string): string[] {
   // Normalize line endings to \n first (handles \r, \r\n)
@@ -111,8 +111,9 @@ function parseVCardLine(line: string): VCardForObsidianRecord {
 	let parsedData: Record<string, any> = {};
 
 	const typeValues:string = params["type"] ? `[${params["type"].join(",")}]` : "";
-	if (key.includes('PHOTO') && key.includes('ENCODING=BASE64')) {
-		parsedData['PHOTO'] = photoLineFromV3toV4(line);
+	if (key.includes('PHOTO') && (key.includes('ENCODING=BASE64') || key.includes('ENCODING=b') )) {
+    const v4Photo  = photoLineToV4(line)
+		parsedData['PHOTO'] = v4Photo ? v4Photo : line;
 	} else if (key === 'VERSION') {
 		parsedData['VERSION'] = '4.0';
 	} else if (propKey in StructuredFields) {

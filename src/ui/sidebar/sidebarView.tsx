@@ -1,9 +1,8 @@
 import { ItemView, Notice, WorkspaceLeaf } from "obsidian";
-import { createRef } from "react";
 import * as React from "react";
 import { createRoot } from "react-dom/client";
 import { clearApp, setApp } from "src/context/sharedAppContext";
-import { clearSettings, setSettings } from "src/context/sharedSettingsContext";
+import { clearSettings, updateSetting } from "src/context/sharedSettingsContext";
 import ContactsPlugin from "src/main";
 import { SidebarRootView } from "src/ui/sidebar/components/SidebarRootView";
 import { CONTACTS_VIEW_CONFIG } from "src/util/constants";
@@ -31,14 +30,8 @@ export class ContactsView extends ItemView {
       const folderExists = await vault.adapter.exists(folderPath);
       if (!folderExists) {
         await vault.createFolder(folderPath);
-        this.plugin.settings.contactsFolder = folderPath;
-        await this.plugin.saveSettings();
-        setSettings(this.plugin.settings);
-      } else {
-        this.plugin.settings.contactsFolder = folderPath;
-        await this.plugin.saveSettings();
-        setSettings(this.plugin.settings);
       }
+      await updateSetting('contactsFolder', folderPath)
     } catch (err) {
       new Notice('Failed to create folder default Contacts folder');
     }
@@ -62,7 +55,6 @@ export class ContactsView extends ItemView {
 
 	async onOpen(){
 		setApp(this.app);
-    setSettings(this.plugin.settings);
 		this.root.render(
 				<SidebarRootView
           sideBarApi={(sideBarApi: SidebarAPI) => (this.sideBarApi = sideBarApi)}

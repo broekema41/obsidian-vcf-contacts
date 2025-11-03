@@ -1,80 +1,121 @@
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { Contact } from "src/contacts";
-import { InsightQueItem, RunType } from "src/insights/insight.d";
+import { getSettings, updateSetting } from "src/context/sharedSettingsContext";
 import { insightService } from "src/insights/insightService";
+import { insightQueueStore } from "src/insights/insightsQueStore";
+import { useOutsideClickHook } from "src/ui/hooks/outsideClickHook";
+
+import {IconButton} from "./elements/IconButton";
+import {SettingItem} from "./elements/settingItem";
 
 type ActionProps = {
   setDisplayInsightsView: (displayActionView: boolean) => void;
   processContacts: Contact[];
 };
 
-function groupByProcessorNameMap(items: InsightQueItem[]): Map<string, InsightQueItem[]> {
-  const grouped = new Map<string, InsightQueItem[]>();
-
-  for (const item of items) {
-    const list = grouped.get(item.name) ?? [];
-    list.push(item);
-    grouped.set(item.name, list);
-  }
-
-  return grouped;
-}
-
-
 export const InsightsView = (props: ActionProps) => {
   const [loading, setLoading] = useState(true);
-  const [writing, setWriting] = useState(false);
-  const writeTimerRef = useRef<number | null>(null);
-  const [contacts] = useState(() => props.processContacts);
-  const [immediateResults, setImmediateResults] = useState<Map<string, InsightQueItem[]>>(new Map());
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [groupedView, setGroupedView] = useState(getSettings().groupInsights);
+  const [count, setCount] = useState<number>(insightQueueStore.insightQueItemCount.value);
+  const [groupInsightItems, setGroupInsightItems] = useState<React.ReactNode[]>([]);
+  const [insightItems, setInsightItems] = useState<React.ReactNode[]>([]);
+
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  useOutsideClickHook(wrapperRef, () => {
+    props.setDisplayInsightsView(false)
+  });
+
+  async function setAndSaveGroupSetting(groupInsights:boolean) {
+    setGroupedView(groupInsights);
+    await updateSetting('groupInsights', groupInsights);
+  }
 
   useEffect(() => {
-    if(loading) {
-      return;
-    }
-
-    if (writeTimerRef.current !== null) {
-      clearTimeout(writeTimerRef.current);
-    }
-
-    if(writing) {
-      writeTimerRef.current = window.setTimeout(() => {
-        if(!loading) {
-          setWriting(false);
-          writeTimerRef.current = null;
-        }
-      }, 250);
-      return;
-    }
-
-    // if the detect user is manipulating files manually then we go back to the main view.
-    props.setDisplayInsightsView(false);
-  }, [props.processContacts]);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        setWriting(true);
-        const immediateResults = await insightService.process(contacts, RunType.IMMEDIATELY);
-
-        if (immediateResults.length === 0) {
-          setWriting(false);
-          setLoading(false);
-        }
-
-        setLoading(false);
-        setImmediateResults(groupByProcessorNameMap(immediateResults))
-
-      } catch (e) {
-        console.error('error loading insights', e);
-      }
-    }
-    load();
+    const unsubscribe = insightService.backgroundProcessRunning.subscribe((running) => {
+      setLoading(running);
+    });
+    return () => unsubscribe();
   }, []);
 
+
+  useEffect(() => {
+    let timeoutId: number | null = null;
+    const unsubscribe = insightQueueStore.insightQueItemCount.subscribe((newValue) => {
+      setCount(newValue);
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(() => {
+        renderInsights();
+      }, 15);
+    });
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      unsubscribe();
+    };
+  }, []);
+
+  function renderInsights() {
+    const processorNames = insightQueueStore.getProcessorsInStore();
+    const myGroupInsights = [];
+    const myInsights = [];
+    for (const processorName of processorNames) {
+      const queItems = insightQueueStore.getByName(processorName);
+      const processor = insightService.getProcessorByName(processorName)
+      if (processor) {
+
+        if (queItems.length > 2) {
+          const groupInsight = processor.renderGroup({
+            queItems
+          });
+          myGroupInsights.push(groupInsight);
+        }
+
+        for (const queItem of queItems) {
+          const singleInsight = processor.render({
+            queItem,
+            dismissItem: async () => {
+              await insightQueueStore.dismissItem(queItem);
+              renderInsights();
+            }
+          })
+          myInsights.push(singleInsight);
+        }
+      }
+    }
+
+    setGroupInsightItems(myGroupInsights);
+    setInsightItems(myInsights);
+  }
+
   return (
-    <div className="contacts-view">
+    <div ref={wrapperRef} className="contacts-view">
+      <div className="insights-results">
+        <div className="insights-results-header">
+          <div className="insights-result-count">
+            <span>{count} results</span>
+          </div>
+          <div>
+            <IconButton
+              icon="sliders-horizontal"
+              active={false}
+              onClick={setSettingsOpen}
+            />
+          </div>
+          <div className="contacts-view-close">
+            <div className="modal-close-button" onClick={() => props.setDisplayInsightsView(false)}></div>
+          </div>
+        </div>
+        {settingsOpen ? (
+          <div className="insights-results-settings">
+            <SettingItem name="Groupe insights" active={groupedView} onClick={setAndSaveGroupSetting}></SettingItem>
+          </div>
+        ) : null}
+      </div>
+
 
       {loading ? (
         <div className="progress-bar progress-bar--contacts">
@@ -85,45 +126,32 @@ export const InsightsView = (props: ActionProps) => {
             <div className="progress-bar-subline mod-decrease"></div>
           </div>
         </div>
-      ) : (
-        <div className="contacts-view-close" >
-          <div className="modal-close-button" onClick={() => props.setDisplayInsightsView(false)}></div>
-        </div>
-      )}
+      ) : null
+      }
 
-
-{
-  !loading ? (
-    Array.from(immediateResults.entries()).length === 0 ? (
+      {
+        !loading ? (
+          insightItems.length === 0 ? (
             <div className="action-card">
               <div className="action-card-content action-card-content--no-height">
                 <p>No insights available.</p>
               </div>
             </div>
-        ) : (
-          Array.from(immediateResults.entries()).map(([key, insights]) => (
-            insights[0].renderGroup(insights)
-          ))
-        )
-      ) : null}
+          ) : null
+        ) : null
+      }
 
-      {/*<div className="action-card">*/}
-      {/*  <div className="action-card-content action-card-content--no-height">*/}
-      {/*    <p>No insights available.</p>*/}
-      {/*  </div>*/}
-      {/*  <div className="modal-close-button"></div>*/}
-      {/*</div>*/}
+      {
+        !loading && groupedView && groupInsightItems.length > 0
+          ? groupInsightItems
+          : null
+      }
 
-      {/*<div className="action-card">*/}
-      {/*  <div className="action-card-content">*/}
-      {/*    <p><b>3</b> birthdays in the next 7 days.</p>*/}
-      {/*    <p><b>16</b> profile improvements possible.</p>*/}
-      {/*  </div>*/}
-      {/*  <button*/}
-      {/*    className="action-card-button"*/}
-      {/*  >Go</button>*/}
-      {/*  <div className="modal-close-button"></div>*/}
-      {/*</div>*/}
+      {
+        !loading && !groupedView && insightItems.length > 0
+          ? insightItems
+          : null
+      }
     </div>
   )
 }

@@ -23,14 +23,13 @@
  *
  * The parsing functions assume that the input string is well-formed; an error is thrown if a closing bracket is missing.
  */
-import {Notice} from "obsidian";
-
 export interface ParsedKey {
 	key: string;
 	index?: string;
 	type?: string;
 	subkey?: string;
 }
+
 /**
  * Extracts the main part of the string and an optional subkey.
  * The subkey is defined as the portion after the first dot.
@@ -52,7 +51,7 @@ function extractSubkey(input: string): { main: string; subkey?: string } {
  * Otherwise, it assumes the content is a type.
  */
 function parseBracketContent(content: string): { index?: string; type?: string } {
-	if (content.includes(':')) {
+  if (content.includes(':')) {
 		const [index, type] = content.split(':');
 		return { index, type };
 	}
@@ -81,7 +80,6 @@ function parseKeyPart(main: string): { key: string; index?: string; type?: strin
 	// Extract and parse the content within the brackets.
 	const bracketContent = main.substring(openBracketIndex + 1, closeBracketIndex);
 	const { index, type } = parseBracketContent(bracketContent);
-
 	return { key, index, type };
 }
 
@@ -102,7 +100,7 @@ export function parseKey(input: string): ParsedKey {
  * For quick links in the context meny we fallback
  * too what we have.
  */
-export function getSubkeyNameFallback(key: ParsedKey): String {
+export function getSubkeyNameFallback(key: ParsedKey): string {
 	if (key.subkey != null && key.subkey.length > 0) {
 		return key.subkey;
 	} else if (key.type != null && key.type.length > 0){

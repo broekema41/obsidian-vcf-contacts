@@ -1,11 +1,12 @@
 import "src/insights/insightLoading";
 
 import { Plugin } from 'obsidian';
+import { initSettings } from "src/context/sharedSettingsContext";
+import { ContactsSettingTab } from 'src/ui/settings/settingsView';
 import { ContactsView } from "src/ui/sidebar/sidebarView";
 import { CONTACTS_VIEW_CONFIG } from "src/util/constants";
 import myScrollTo from "src/util/myScrollTo";
 
-import { ContactsSettingTab, DEFAULT_SETTINGS } from './settings/settings';
 import { ContactsPluginSettings } from  './settings/settings.d';
 
 export default class ContactsPlugin extends Plugin {
@@ -13,7 +14,7 @@ export default class ContactsPlugin extends Plugin {
 
 	async onload() {
 
-		await this.loadSettings();
+		await initSettings(this.loadData.bind(this), this.saveData.bind(this));
 		this.registerView(
 			CONTACTS_VIEW_CONFIG.type,
 			(leaf) => new ContactsView(leaf, this)
@@ -42,19 +43,10 @@ export default class ContactsPlugin extends Plugin {
         leaf?.createNewContact()
       },
     });
-
-
 	}
 
 	onunload() {}
 
-	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-	}
-
-	async saveSettings() {
-		await this.saveData(this.settings);
-	}
 
 	async activateSidebarView() {
 		if (this.app.workspace.getLeavesOfType(CONTACTS_VIEW_CONFIG.type).length < 1) {

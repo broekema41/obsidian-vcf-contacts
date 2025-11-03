@@ -1,11 +1,14 @@
-import { Menu, Notice, setIcon, TFile } from "obsidian";
+import {Menu, MenuItem, setIcon, TFile} from "obsidian";
 import * as React from "react";
-import { Contact, getSubkeyNameFallback, parseKey } from "src/contacts";
+import { Contact, parseKey } from "src/contacts";
 import { getApp } from "src/context/sharedAppContext";
 import { fileId, openFile } from "src/file/file";
-import Avatar from "src/ui/sidebar/components/Avatar";
+import { sync } from "src/sync";
+import { useSyncEnabled } from "src/ui/hooks/syncEnabledHook";
+import Avatar from "src/ui/sidebar/components/elements/Avatar";
 import { CopyableItem } from "src/ui/sidebar/components/CopyableItem";
 import { getUiName, uiSafeString } from "src/util/nameUtils";
+
 import {handleContextMenu} from "./ContextMenu";
 
 type ContactProps = {
@@ -17,12 +20,13 @@ type ContactProps = {
 
 
 export const ContactView = (props: ContactProps) => {
-	const {workspace} = getApp();
+  const syncEnabled = useSyncEnabled();
+	const { workspace } = getApp();
 	const contact = props.contact;
 	const buttons = React.useRef<(HTMLElement | null)[]>([]);
-	React.useEffect(() => {
+  React.useEffect(() => {
 		buttons.current.forEach(setIconForButton);
-	}, [buttons]);
+	}, [buttons, syncEnabled]);
 
 
   const renderTopThreeItems = (
@@ -160,6 +164,31 @@ export const ContactView = (props: ContactProps) => {
 		return null;
 	};
 
+ const handleSyncContextMenu = (myContact: Contact) => {
+    return (event: React.MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const menu = new Menu();
+      menu.addItem((item:MenuItem) =>
+        item.setSection("vcf-sync-main").setTitle("Push").setIcon("square-arrow-up").onClick(() =>{
+          sync.pushToRemote(myContact);
+        })
+      );
+      menu.addItem((item:MenuItem) =>
+        item.setSection("vcf-sync-main").setTitle("Pull").setIcon("square-arrow-down").onClick(() =>{
+          sync.updateFromRemote(myContact);
+        })
+      );
+      menu.addItem((item:MenuItem) =>
+        item.setSection("vcf-sync-danger").setTitle("Delete").setIcon("trash-2").onClick(() =>{
+          sync.deleteOnRemote(myContact);
+        })
+      );
+      menu.showAtPosition({ x: event.pageX, y: event.pageY });
+    }
+
+  };
+
 	const showContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
     handleContextMenu(event, contact);
 	}
@@ -229,6 +258,18 @@ export const ContactView = (props: ContactProps) => {
                 }}
 							>
 							</div>
+              {syncEnabled ?
+                <div
+                  data-icon="refresh-ccw-dot"
+                  className={
+                    "clickable-icon nav-action-button "
+                  }
+                  aria-label="Sync"
+                  ref={(element) => (buttons.current[2] = element)}
+                  onClick={handleSyncContextMenu(contact)}
+                >
+                </div>
+              : null}
 						</div>
 					</div>
 				</div>

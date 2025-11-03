@@ -51,7 +51,7 @@ function isHttpUrl(str: string): boolean {
 export const processAvatar = async (contact: Contact) => {
 	try {
 		let rawImg :HTMLImageElement;
-    await insightService.process(contact, RunType.IMMEDIATELY)
+    await insightService.process(RunType.IMMEDIATELY)
 		if (isHttpUrl(contact.data['PHOTO'])) {
 			new Notice("Detected online photo url: Scaling and pulling into your local vault.");
 			rawImg = await getImage(contact.data['PHOTO']);

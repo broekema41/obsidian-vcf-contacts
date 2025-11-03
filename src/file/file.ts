@@ -1,5 +1,4 @@
 import {App, normalizePath, Notice, Platform, TFile, TFolder, Vault, Workspace} from "obsidian";
-import {getFrontmatterFromFiles} from "src/contacts";
 import {getSettings} from "src/context/sharedSettingsContext";
 import {RunType} from "src/insights/insight.d";
 import {insightService} from "src/insights/insightService";
@@ -8,7 +7,6 @@ import {createNameSlug} from "src/util/nameUtils";
 
 import {Deferred} from "../util/deferred";
 import {detectVCardEncoding} from "./encodingDetection";
-
 
 export async function openFile(file: TFile, workspace: Workspace) {
   const leaf = workspace.getLeaf()
@@ -25,10 +23,10 @@ export function findContactFiles(contactsFolder: TFolder) {
   return contactFiles;
 }
 
-function openCreatedFile(app: App, filePath: string) {
+async function openCreatedFile(app: App, filePath: string) {
   const file = app.vault.getAbstractFileByPath(filePath);
   if (file instanceof TFile) {
-    openFile(file, app.workspace);
+    await openFile(file, app.workspace);
   }
 }
 
@@ -44,20 +42,19 @@ async function handleFileCreation(app: App, filePath: string, content: string) {
 
       if (action === "replace") {
         await app.vault.adapter.write(filePath, content);
-        openCreatedFile(app, filePath);
+        await openCreatedFile(app, filePath);
         new Notice(`File overwritten.`);
       }
     }).open();
   } else {
     const createdFile = await app.vault.create(filePath, content);
     await new Promise(r => setTimeout(r, 50));
-    const contact = await getFrontmatterFromFiles([createdFile])
-    await insightService.process(contact, RunType.IMMEDIATELY);
-    openFile(createdFile, app.workspace);
+    await insightService.process(RunType.IMMEDIATELY);
+    await openFile(createdFile, app.workspace);
   }
 }
 
-export function createContactFile(
+export async function createContactFile(
   app: App,
   folderPath: string,
   content: string,
@@ -73,10 +70,10 @@ export function createContactFile(
 
   if (parentFolder?.path?.contains(folderPath)) {
     const filePath = normalizePath(fileJoin(parentFolder.path, filename));
-    handleFileCreation(app, filePath, content);
+    await handleFileCreation(app, filePath, content);
   } else {
     const filePath = normalizePath(fileJoin(folderPath, filename));
-    handleFileCreation(app, filePath, content);
+    await handleFileCreation(app, filePath, content);
   }
 }
 
@@ -164,7 +161,6 @@ export async function parseTextFile(file: Blob): Promise<string> {
 
 export function saveVcardFilePicker(data: string, obsidianFile?: TFile) {
   try {
-
     const file = new Blob([data], {type: "text/vcard"});
     const filename = obsidianFile ? obsidianFile.basename.replace(/ /g, '-') + '.vcf' : "shared-contacts.vcf";
     const fileObject = new File([file], filename, {type: "text/vcard"});
@@ -196,14 +192,12 @@ export function saveVcardFilePicker(data: string, obsidianFile?: TFile) {
       })();
 
     } else {
-
       // desktopApp
       const element = document.createElement("a");
       element.href = URL.createObjectURL(fileObject);
       element.download = filename;
       element.click();
     }
-
   } catch (err) {
     console.log("Failed to share or save VCard", err);
   }
@@ -211,12 +205,6 @@ export function saveVcardFilePicker(data: string, obsidianFile?: TFile) {
 
 export function createFileName(records: Record<string, string>) {
   const nameSlug = createNameSlug(records);
-
-  if (!nameSlug) {
-    console.error('No name found for record', records);
-    throw new Error('No name found for record');
-  }
-
   return nameSlug + '.md';
 }
 
