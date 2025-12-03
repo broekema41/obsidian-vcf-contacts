@@ -2,7 +2,8 @@ import {computed} from "@preact/signals-core";
 import {Notice} from "obsidian";
 import {Contact, getFrontmatterFromFiles, updateFrontMatterValue} from "src/contacts";
 import {vcard} from "src/contacts/vcard";
-import {settings} from "src/context/sharedSettingsContext";
+import { settings, updateSetting } from "src/context/sharedSettingsContext";
+import { UidProcessor } from "src/insights/processors/UidProcessor";
 import {adapters} from "src/sync/adapters";
 import {VCardMeta, VCardRaw} from "src/sync/adapters/adapter";
 import {AppHttpResponse} from "src/util/platformHttpClient";
@@ -72,13 +73,26 @@ export async function deleteOnRemote(contact: Contact) {
 export async function pushToRemote(contact: Contact) {
   const setting = settings.value;
   if (setting) {
-    const frontmatter = (await getFrontmatterFromFiles([contact.file]))[0]
+    let frontmatter = (await getFrontmatterFromFiles([contact.file]))[0]
     const adapter = adapters[setting.syncSelected];
     if (adapter) {
       const result = await vcard.toString([contact.file]);
       if (result.errors.length > 0) {
         return;
       }
+
+      if(!frontmatter.data['UID']) {
+        if(!setting.processors[UidProcessor.settingPropertyName]) {
+          await updateSetting(`processors.${UidProcessor.settingPropertyName}`, true);
+          new Notice(`Setting for processors.${UidProcessor.settingPropertyName} set to active as it is required for sync`);
+        }
+
+        await UidProcessor.process([contact]);
+        // wait for frontmatter to be updated by obsidian.
+        await new Promise(resolve => setTimeout(resolve, 250));
+        frontmatter = (await getFrontmatterFromFiles([contact.file]))[0]
+      }
+
       const res = await adapter.push({
         uid: frontmatter.data['UID'].split(':').pop(),
         raw: result.vcards

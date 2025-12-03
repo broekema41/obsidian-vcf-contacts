@@ -39,6 +39,15 @@ const mockSettings: ContactsPluginSettings = {
   }
 };
 
+const testDefaultSettings = {
+  ...DEFAULT_SETTINGS,
+  ...{processors: {
+      "anotherProcessor": false,
+      "someRandomProcessor": true,
+    }}
+};
+
+
 export const loadData = vi.fn(async () => mockSettings);
 // Async mock that records calls and resolves
 export const saveData = vi.fn(async (data: ContactsPluginSettings) => {
@@ -69,9 +78,9 @@ describe('sharedSettingsContext', () => {
   it('should be initialized and have default settings', async () => {
     await initSettings(async () => {}, saveData)
     const retrieved = getSettings();
-    expect(retrieved).to.deep.equal(DEFAULT_SETTINGS);
+    expect(retrieved).to.deep.equal(testDefaultSettings);
     expect(saveData).toHaveBeenCalledTimes(1);
-    expect(saveData).toHaveBeenCalledWith(expect.objectContaining(DEFAULT_SETTINGS));
+    expect(saveData).toHaveBeenCalledWith(expect.objectContaining(testDefaultSettings));
   });
 
   it('setSettings should overwrite the complete settings object', async () => {
@@ -126,7 +135,7 @@ describe('sharedSettingsContext', () => {
     unsubscribe();
     await setSettings(mockSettings);
     expect(listener).toHaveBeenCalledTimes(1);
-    expect(listener).toHaveBeenCalledWith(DEFAULT_SETTINGS);
+    expect(listener).toHaveBeenCalledWith(testDefaultSettings);
     const retrieved = getSettings();
     expect(retrieved).to.deep.equal(mockSettings);
   });

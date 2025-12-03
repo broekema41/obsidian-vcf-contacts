@@ -1,4 +1,5 @@
 import { signal } from "@preact/signals-core";
+import { insightService } from "src/insights/insightService";
 import { DEFAULT_SETTINGS } from "src/settings/setting";
 import { ContactsPluginSettings } from "src/settings/settings.d";
 import { deepCloneObject } from "src/util/deepCloneObject";
@@ -10,6 +11,14 @@ export async function initSettings(
   loadData: () => Promise<any>,   // a callable async function
   mySaveData: (data: any) => Promise<void> // another callable async function
 ) {
+
+  const insightsSetting = insightService.settings();
+  const insightsSettingDefaults = insightsSetting.reduce((acc:Record<string, string|boolean>, setting) => {
+    acc[setting.settingPropertyName] = setting.settingDefaultValue;
+    return acc;
+  }, {} as Record<string, string>);
+
+
   saveData = mySaveData;
   const loaded = await loadData() ?? {};
   const initializedSettings = {
@@ -20,7 +29,7 @@ export async function initSettings(
         ...(loaded.CardDAV ?? {})
       },
       processors: {
-        ...DEFAULT_SETTINGS.processors,
+        ...insightsSettingDefaults,
         ...(loaded.processors ?? {})
       }
     };

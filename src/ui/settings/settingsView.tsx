@@ -6,7 +6,6 @@ import { InsightSettings } from "src/ui/settings/components/insightsSettings";
 import { MasterSetting } from "src/ui/settings/components/masterSettings";
 import { SynchronizationSettings } from "src/ui/settings/components/synchronizationSettings";
 
-
 export class ContactsSettingTab extends PluginSettingTab {
   plugin: ContactsPlugin;
   app: App;
@@ -16,7 +15,6 @@ export class ContactsSettingTab extends PluginSettingTab {
     super(app, plugin);
     this.plugin = plugin;
   }
-
 
   display(): void {
     const { containerEl } = this;

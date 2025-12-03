@@ -131,7 +131,7 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
   async function createNewContact() {
       const records = await vcard.createEmpty();
       const mdContent = mdRender(records, mySettings.defaultHashtag);
-      await createContactFile(app, mySettings.contactsFolder, mdContent, createFileName(records))
+      await createContactFile(app, mySettings.contactsFolder, mdContent, createFileName(records));
   }
 
 	return (

@@ -1,4 +1,5 @@
 import { ensureHasName } from "src/contacts/vcard/shared/ensureHasName";
+import { generateUUID } from "src/util/vcard";
 
 export async function createEmpty() {
   const vCardObject: Record<string, any> = {
@@ -22,7 +23,8 @@ export async function createEmpty() {
     "ORG": "",
     "ROLE": "",
     "CATEGORIES": "",
-    "VERSION": "4.0"
+    "VERSION": "4.0",
+    "UID": `urn:uuid:${generateUUID()}`
   }
   return await ensureHasName(vCardObject);
 }

@@ -67,7 +67,7 @@ export const InsightsView = (props: ActionProps) => {
       const processor = insightService.getProcessorByName(processorName)
       if (processor) {
 
-        if (queItems.length > 2) {
+        if (queItems.length >= 1) {
           const groupInsight = processor.renderGroup({
             queItems
           });
