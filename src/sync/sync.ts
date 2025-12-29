@@ -141,7 +141,7 @@ export async function updateFromRemote(contact: Contact) {
         for (const [key, value] of Object.entries(remoteVcf.value?.[1])) {
 
           if (key === 'UID') {
-            break;
+            continue;
           }
 
           const localValue = contact.data[key];
@@ -150,12 +150,12 @@ export async function updateFromRemote(contact: Contact) {
             if(!localValue || localValue=== '') {
               await updateFrontMatterValue(contact.file, key, value);
             }
-            break;
+            continue;
           }
 
           if (!localValue || localValue === '') {
             await updateFrontMatterValue(contact.file, key, value);
-            break;
+            continue;
           }
 
           if(value.length !== 0 && localValue !== value) {
