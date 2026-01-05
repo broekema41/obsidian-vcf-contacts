@@ -7,10 +7,11 @@ import { getSettings } from "src/context/sharedSettingsContext";
 import {
   createContactFile,
   createFileName,
-  findContactFiles, isFileInFolder,
+  findContactFiles, isFileInFolder, openFile,
   openFilePicker,
   saveVcardFilePicker
 } from "src/file/file";
+import { RunType } from "src/insights/insight.d";
 import { insightService } from "src/insights/insightService";
 import { ContactsPluginSettings } from "src/settings/settings";
 import { useSettings } from "src/ui/hooks/settingsHook";
@@ -48,6 +49,7 @@ const importVCFContacts = async (fileContent: string, app: App, settings: Contac
 
   if (skipped > 0) new Notice(`Skipped ${skipped} contact(s) without name information`);
   if (imported > 0) new Notice(`Imported ${imported} contact(s)`);
+  await insightService.process(RunType.IMMEDIATELY);
 };
 
 export const SidebarRootView = (props: SidebarRootViewProps) => {
@@ -131,7 +133,10 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
   async function createNewContact() {
       const records = await vcard.createEmpty();
       const mdContent = mdRender(records, mySettings.defaultHashtag);
-      await createContactFile(app, mySettings.contactsFolder, mdContent, createFileName(records));
+      const filePath = await createContactFile(app, mySettings.contactsFolder, mdContent, createFileName(records));
+      if(filePath) {
+        openFile(app.vault.getAbstractFileByPath(filePath) as TFile, workspace)
+      }
   }
 
 	return (
