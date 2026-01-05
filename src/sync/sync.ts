@@ -4,7 +4,7 @@ import {Contact, getFrontmatterFromFiles, updateFrontMatterValue} from "src/cont
 import {vcard} from "src/contacts/vcard";
 import { settings, updateSetting } from "src/context/sharedSettingsContext";
 import { UidProcessor } from "src/insights/processors/UidProcessor";
-import {adapters} from "src/sync/adapters";
+import { getCurrentAdapter } from "src/sync/adapters";
 import {VCardMeta, VCardRaw} from "src/sync/adapters/adapter";
 import {AppHttpResponse} from "src/util/platformHttpClient";
 import {cleanUid} from "src/util/vcard";
@@ -44,21 +44,17 @@ export async function getUnknownFromRemote(currentContacts: Contact[]): Promise<
 }
 
 export async function getRawVcardFromRemote(href: string) {
-  const setting = settings.value;
-  if (setting) {
-    const adapter = adapters[setting.syncSelected];
-    if(adapter) {
-      return adapter.pull(href);
-    }
+  const adapter = getCurrentAdapter();
+  if(adapter) {
+    return adapter.pull(href);
   }
   return undefined;
 }
 
 export async function deleteOnRemote(contact: Contact) {
-  const setting = settings.value;
-  if (setting) {
+  const adapter = getCurrentAdapter();
+  if (adapter) {
     const meta = await getMetaByUID(contact.data['UID'])
-    const adapter = adapters[setting.syncSelected];
     if (adapter && meta) {
       const res =  await adapter.delete(meta.href);
       if(res.status && (res.status < 200 || res.status > 300)) {
@@ -71,43 +67,40 @@ export async function deleteOnRemote(contact: Contact) {
 }
 
 export async function pushToRemote(contact: Contact) {
-  const setting = settings.value;
-  if (setting) {
+  const adapter = getCurrentAdapter();
+  if (adapter) {
     let frontmatter = (await getFrontmatterFromFiles([contact.file]))[0]
-    const adapter = adapters[setting.syncSelected];
-    if (adapter) {
-      const result = await vcard.toString([contact.file]);
-      if (result.errors.length > 0) {
-        return;
+    const result = await vcard.toString([contact.file]);
+    if (result.errors.length > 0) {
+      return;
+    }
+
+    if(!frontmatter.data['UID'] && settings.value) {
+      if(!settings.value.processors[UidProcessor.settingPropertyName]) {
+        await updateSetting(`processors.${UidProcessor.settingPropertyName}`, true);
+        new Notice(`Setting for processors.${UidProcessor.settingPropertyName} set to active as it is required for sync`);
       }
 
-      if(!frontmatter.data['UID']) {
-        if(!setting.processors[UidProcessor.settingPropertyName]) {
-          await updateSetting(`processors.${UidProcessor.settingPropertyName}`, true);
-          new Notice(`Setting for processors.${UidProcessor.settingPropertyName} set to active as it is required for sync`);
-        }
+      await UidProcessor.process([contact]);
+      // wait for frontmatter to be updated by obsidian.
+      await new Promise(resolve => setTimeout(resolve, 250));
+      frontmatter = (await getFrontmatterFromFiles([contact.file]))[0]
+    }
 
-        await UidProcessor.process([contact]);
-        // wait for frontmatter to be updated by obsidian.
-        await new Promise(resolve => setTimeout(resolve, 250));
-        frontmatter = (await getFrontmatterFromFiles([contact.file]))[0]
-      }
-
-      const res = await adapter.push({
-        uid: frontmatter.data['UID'].split(':').pop(),
-        raw: result.vcards
-      })
+    const res = await adapter.push({
+      uid: frontmatter.data['UID'].split(':').pop(),
+      raw: result.vcards
+    })
 
 
-      if (res && "errorMessage" in res && res.errorMessage) {
-        new Notice(res.errorMessage);
-        return;
-      }
+    if (res && "errorMessage" in res && res.errorMessage) {
+      new Notice(res.errorMessage);
+      return;
+    }
 
-      if(res.status && (res.status < 200 || res.status > 300)) {
-        new Notice(res.data);
-        return;
-      }
+    if(res.status && (res.status < 200 || res.status > 300)) {
+      new Notice(res.data);
+      return;
     }
   }
 }
@@ -168,23 +161,20 @@ export async function updateFromRemote(contact: Contact) {
 }
 
 async function getList() {
-  const setting = settings.value;
-  if (setting) {
-    return adapters[setting.syncSelected]?.getMetaList();
+  const adapter = getCurrentAdapter()
+  if (adapter) {
+    return adapter.getMetaList();
   }
 }
 
 async function getMetaByUID(uid: string): Promise<VCardMeta | undefined> {
-  const setting = settings.value;
-  if (setting) {
-    const adapter = adapters[setting.syncSelected];
-    if(adapter) {
-      const res:VCardMeta | AppHttpResponse | undefined = await adapter.getMetaByUid(uid);
-      if (res && "errorMessage" in res && res.errorMessage) {
-        new Notice(res.errorMessage);
-        return undefined;
-      }
-      return res as VCardMeta | undefined;
+  const adapter = getCurrentAdapter();
+  if(adapter) {
+    const res:VCardMeta | AppHttpResponse | undefined = await adapter.getMetaByUid(uid);
+    if (res && "errorMessage" in res && res.errorMessage) {
+      new Notice(res.errorMessage);
+      return undefined;
     }
+    return res as VCardMeta | undefined;
   }
 }
