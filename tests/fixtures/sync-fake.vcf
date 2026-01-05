@@ -1,0 +1,18 @@
+BEGIN:VCARD
+N:Tang;Zhihao;;;
+ADR;TYPE=HOME:;;300 Panda Park;Chengdu;;610000;China
+FN:Zhihao Tang
+PHOTO:https://raw.githubusercontent.com/broekema41/obsidian-vcf-contacts/refs/heads/master/assets/demo-data/avatars/avatar4.jpg
+EMAIL;TYPE=HOME:zhihao.panda@bamboomail.cn
+EMAIL;TYPE=WORK:zhihao@greenlogic.cn
+TEL;TYPE=CELL:+8613900000000
+TEL;TYPE=WECHAT:+8613900000001
+TEL;TYPE=CHINA:+14165554444
+BDAY:1994-09-09
+URL;TYPE=HOME:https://zhihao.cn
+URL;TYPE=WORK:https://greenlogic.cn/zhihao
+ORG:Bamboo Logic Studios
+CATEGORIES:Nature, Code
+VERSION:4.0
+UID:urn:uuid:019730a76c16e-43b9-8839-91a8d3aff89e
+END:VCARD
