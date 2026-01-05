@@ -1,7 +1,5 @@
 import {App, normalizePath, Notice, Platform, TFile, TFolder, Vault, Workspace} from "obsidian";
 import {getSettings} from "src/context/sharedSettingsContext";
-import {RunType} from "src/insights/insight.d";
-import {insightService} from "src/insights/insightService";
 import {FileExistsModal} from "src/ui/modals/fileExistsModal";
 import {createNameSlug} from "src/util/nameUtils";
 
@@ -47,10 +45,7 @@ async function handleFileCreation(app: App, filePath: string, content: string) {
       }
     }).open();
   } else {
-    const createdFile = await app.vault.create(filePath, content);
-    await new Promise(r => setTimeout(r, 50));
-    await insightService.process(RunType.IMMEDIATELY);
-    await openFile(createdFile, app.workspace);
+    await app.vault.adapter.write(filePath, content);
   }
 }
 
@@ -59,7 +54,7 @@ export async function createContactFile(
   folderPath: string,
   content: string,
   filename: string
-) {
+): Promise<string | undefined> {
   const folder = app.vault.getAbstractFileByPath(folderPath !== '' ? folderPath : '/');
   if (!folder) {
     new Notice(`Can not find path: '${folderPath}'. Please update "Contacts" plugin settings`);
@@ -71,9 +66,11 @@ export async function createContactFile(
   if (parentFolder?.path?.contains(folderPath)) {
     const filePath = normalizePath(fileJoin(parentFolder.path, filename));
     await handleFileCreation(app, filePath, content);
+    return filePath;
   } else {
     const filePath = normalizePath(fileJoin(folderPath, filename));
     await handleFileCreation(app, filePath, content);
+    return filePath;
   }
 }
 
