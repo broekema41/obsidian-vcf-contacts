@@ -1,6 +1,6 @@
 {
 	"name": "vcf-contacts",
-	"version": "2.3.1",
+	"version": "2.3.2",
 	"description": "Effortlessly manage, organize, and interact with your contacts inside Obsidian. Import, export, and structure vCard (VCF) files seamlessly while keeping all contact details accessible in your knowledge base. Includes click-to-call, right-click copy, structured metadata, and more!",
 	"main": "main.js",
 	"scripts": {
@@ -9,9 +9,9 @@
 		"test": "vitest",
 		"test:run": "vitest run",
 		"test:coverage": "vitest run --coverage",
-    "patch": "node release-notes.mjs patch && node version-bump.mjs patch",
-    "minor": "node release-notes.mjs minor && node version-bump.mjs minor",
-    "major": "node release-notes.mjs major && node version-bump.mjs major"
+		"patch": "node release-notes.mjs patch && node version-bump.mjs patch",
+		"minor": "node release-notes.mjs minor && node version-bump.mjs minor",
+		"major": "node release-notes.mjs major && node version-bump.mjs major"
 	},
 	"keywords": [
 		"obsidian",

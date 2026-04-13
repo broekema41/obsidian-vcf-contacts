@@ -1,0 +1,10 @@
+## Changes
+- Merge pull request #84 from broekema41/feature/83-release-notes-pipline
+- Refs: #83 getting ready to do a run on github
+- Refs: #83 initial experimentation adding a github workflow for release
+- Merge pull request #79 from broekema41/feature/73-unit-test-for-update-loop
+- Refs: #73 first test set for the sync loop bug updateFromRemote
+- Merge pull request #73 from schutm/patch-1
+- Merge pull request #78 from broekema41/feature/68-performance-improvements-import
+- Refs: #68 less waiting for files to be rendered during import
+- Don't bail update when encountering UID, PHOTO or an empty value
