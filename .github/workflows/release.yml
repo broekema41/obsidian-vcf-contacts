@@ -1,0 +1,47 @@
+name: Build & Release Obsidian Plugin
+
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test:run
+
+      - name: Build plugin
+        run: npm run build
+
+      - name: Read release title
+        id: release_title
+        run: echo "value=$(cat release_title.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Create Release (Draft)
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          name: ${{ steps.release_title.outputs.value }}
+          body_path: release_changelog.txt
+          files: |
+            main.js
+            manifest.json
+            styles.css
