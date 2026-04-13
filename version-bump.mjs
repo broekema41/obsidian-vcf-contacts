@@ -45,4 +45,4 @@ execSync(`git commit -m "version bump: ${version}"`, {
 
 execSync(`git tag ${version}`, { stdio: "inherit" });
 
-console.log(`🚀 Released ${version} ready for push \n git push --follow-tags`);
+console.log(`🚀 Released ${version} ready for push \n git push origin --tags`);
