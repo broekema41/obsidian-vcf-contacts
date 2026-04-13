@@ -6,10 +6,12 @@
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"test": "vitest",
 		"test:run": "vitest run",
-		"test:coverage": "vitest run --coverage"
+		"test:coverage": "vitest run --coverage",
+    "patch": "node version-bump.mjs patch",
+    "minor": "node version-bump.mjs minor",
+    "major": "node version-bump.mjs major"
 	},
 	"keywords": [
 		"obsidian",
