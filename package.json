@@ -9,9 +9,9 @@
 		"test": "vitest",
 		"test:run": "vitest run",
 		"test:coverage": "vitest run --coverage",
-    "patch": "node version-bump.mjs patch",
-    "minor": "node version-bump.mjs minor",
-    "major": "node version-bump.mjs major"
+    "patch": "node release-notes.mjs patch && node version-bump.mjs patch",
+    "minor": "node release-notes.mjs minor && node version-bump.mjs minor",
+    "major": "node release-notes.mjs major && node version-bump.mjs major"
 	},
 	"keywords": [
 		"obsidian",

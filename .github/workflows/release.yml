@@ -15,8 +15,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # IMPORTANT for release notes
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -33,29 +31,16 @@ jobs:
       - name: Build plugin
         run: npm run build
 
-      - name: Sync versions (manifest + versions.json)
-        run: npm run version
-
-      - name: Commit version updates
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add manifest.json versions.json
-          git commit -m "chore: sync versions" || echo "No changes"
-          git push
-
-      - name: Generate changelog
-        id: changelog
-        run: |
-          echo "## Changes" > CHANGELOG.md
-          git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"- %s" >> CHANGELOG.md
+      - name: Read release title
+        id: release_title
+        run: echo "value=$(cat release_title.txt)" >> "$GITHUB_OUTPUT"
 
       - name: Create Release (Draft)
         uses: softprops/action-gh-release@v2
         with:
           draft: true
-          name: Release ${{ github.ref_name }}
-          body_path: CHANGELOG.md
+          name: ${{ steps.release_title.outputs.value }}
+          body_path: release_changelog.txt
           files: |
             main.js
             manifest.json
