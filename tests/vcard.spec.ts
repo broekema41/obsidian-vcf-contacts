@@ -5,6 +5,7 @@ import { setApp } from "src/context/sharedAppContext";
 import { NamingPayload } from "src/ui/modals/contactNameModal";
 import { fixtures } from "tests/fixtures/fixtures";
 import { describe, expect, it, vi } from 'vitest';
+import {DEFAULT_SETTINGS} from "../src/settings/setting";
 
 // Helper function to parse vCards and collect only those with valid slugs
 const parseValidVCards = async (vcfData: string) => {
@@ -24,6 +25,14 @@ setApp({
     }
   }
 } as unknown as App);
+
+vi.mock("src/context/sharedSettingsContext", () => {
+  return {
+    getSettings: vi.fn(() => ({
+      createFieldsKeys: DEFAULT_SETTINGS.createFieldsKeys,
+    })),
+  };
+});
 
 vi.mock('src/ui/modals/contactNameModal', () => {
   class ContactNameModal {

@@ -2,6 +2,7 @@ import { App, PluginSettingTab } from "obsidian";
 import * as React from "react";
 import { createRoot, Root } from "react-dom/client";
 import ContactsPlugin from "src/main";
+import { CardFieldSettings } from "src/ui/settings/components/cardFieldSettings";
 import { InsightSettings } from "src/ui/settings/components/insightsSettings";
 import { MasterSetting } from "src/ui/settings/components/masterSettings";
 import { SynchronizationSettings } from "src/ui/settings/components/synchronizationSettings";
@@ -26,6 +27,7 @@ export class ContactsSettingTab extends PluginSettingTab {
         <MasterSetting
           app={this.app}
         />
+        <CardFieldSettings />
         <InsightSettings />
         <SynchronizationSettings />
       </>

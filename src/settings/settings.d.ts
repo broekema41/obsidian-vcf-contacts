@@ -10,6 +10,7 @@ export interface ContactsPluginSettings {
   syncEnabled: boolean;
   groupInsights: boolean;
   CardDAV: CardDavSyncSettings;
+  createFieldsKeys: string[]
 }
 
 
@@ -23,3 +24,5 @@ interface CardDavSyncSettings {
 interface ProcessorsSettings {
   [key: string]: string|boolean;
 }
+
+
