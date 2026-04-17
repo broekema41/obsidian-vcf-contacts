@@ -67,6 +67,20 @@ function sortedPriorityItems(record: Record<string, any>)  {
   );
 }
 
+export function frontMatterRender(record: Record<string, any>) {
+  const { NOTE, ...recordWithoutNote } = record;
+  const groups = groupVCardFields(recordWithoutNote)
+  const frontmatter = {
+    ...sortNameItems(groups.name),
+    ...sortedPriorityItems(groups.priority),
+    ...groups.address,
+    ...groups.other
+  };
+  return `---
+${stringifyYaml(frontmatter)}---
+`;
+}
+
 export function mdRender(record: Record<string, any>, hashtags: string): string {
 	const { NOTE, ...recordWithoutNote } = record;
   const groups = groupVCardFields(recordWithoutNote)

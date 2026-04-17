@@ -36,7 +36,7 @@ export async function initSettings(
     await setSettings(initializedSettings);
 }
 
-export async function updateSetting(path: string, value: string | boolean) {
+export async function updateSetting(path: string, value: string | boolean | string[]) {
   const updated = deepCloneObject(getSettings()); // guaranteed new reference
   const keys = path.split(".");
   let target: any = updated;

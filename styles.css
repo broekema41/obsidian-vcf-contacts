@@ -377,6 +377,19 @@
   margin-top: 0.75em;
 }
 
+.settings-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.settings-tag-list a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+
 .menu .menu-item[data-section="vcf-sync-danger"] {
   color: var(--text-error);
 }
