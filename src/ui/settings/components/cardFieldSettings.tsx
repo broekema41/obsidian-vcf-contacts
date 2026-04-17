@@ -1,12 +1,12 @@
 import * as React from "react";
 import { Notice } from "obsidian";
 import { updateSetting } from "src/context/sharedSettingsContext";
-import {ContactsPluginSettings, SyncSelected} from "src/settings/settings";
+import { ContactsPluginSettings } from "src/settings/settings";
 import { useSettings } from "src/ui/hooks/settingsHook";
 import { Icon } from "src/ui/sidebar/components/elements/Icon";
-import {DEFAULT_SETTINGS} from "../../../settings/setting";
-import {parseKey} from "../../../contacts";
-import {VCardSupportedKey} from "../../../contacts/vcard";
+import { DEFAULT_SETTINGS } from "src/settings/setting";
+import { parseKey } from "src/contacts";
+import { VCardSupportedKey } from "src/contacts/vcard";
 
 type ValidateAddFieldResult = {
   valid: boolean;

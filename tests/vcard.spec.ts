@@ -310,3 +310,8 @@ describe('vcard tostring', () => {
   });
 
 });
+
+
+describe('vcard addDefaultFields', () => {
+  // TODO: write some tests for this.
+});
