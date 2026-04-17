@@ -9,9 +9,27 @@ if (!["patch", "minor", "major"].includes(type)) {
 }
 
 try {
-  execSync("git diff --quiet");
-} catch {
-  console.error("❌ You have uncommitted changes");
+  const output = execSync("git diff --name-only", { encoding: "utf-8" });
+  const changedFiles = output
+    .split("\n")
+    .map(f => f.trim())
+    .filter(Boolean);
+
+  const allowed = new Set([
+    "release_changelog.txt",
+    "release_title.txt"
+  ]);
+
+  const invalid = changedFiles.filter(f => !allowed.has(f));
+
+  if (invalid.length > 0) {
+    console.error("❌ You have uncommitted changes in disallowed files:");
+    invalid.forEach(f => console.error("   -", f));
+    process.exit(1);
+  }
+
+} catch (err) {
+  console.error("❌ Failed to check git status");
   process.exit(1);
 }
 
