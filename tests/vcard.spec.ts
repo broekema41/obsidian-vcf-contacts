@@ -313,5 +313,19 @@ describe('vcard tostring', () => {
 
 
 describe('vcard addDefaultFields', () => {
-  // TODO: write some tests for this.
+  it('should add missing default fields while preserving existing values', async () => {
+    const result = await vcard.addDefaultFields({ basename: 'base.frontmatter' } as TFile);
+
+    expect(result['N.GN']).toBe('Liam');
+    expect(result[ 'URL[WORK]']).toBe('https://storycraft.ie/liam');
+    expect(result['N.PREFIX']).toBe('');
+    expect(result['N.MN']).toBe('');
+    expect(result['N.SUFFIX']).toBe('');
+    expect(result['TEL[HOME]']).toBe('');
+    expect(result['TEL[WORK]']).toBe('');
+    expect(result['EMAIL[HOME]']).toBe('liam.green@lucky.ie');
+    expect(result['EMAIL[WORK]']).toBe('liam@storycraft.ie');
+    expect(result['ROLE']).toBe('');
+    expect(result['CATEGORIES']).toBe('Writing, Mythology');
+  });
 });
