@@ -1,10 +1,8 @@
 ## Changes
-- Merge pull request #84 from broekema41/feature/83-release-notes-pipline
-- Refs: #83 getting ready to do a run on github
-- Refs: #83 initial experimentation adding a github workflow for release
-- Merge pull request #79 from broekema41/feature/73-unit-test-for-update-loop
-- Refs: #73 first test set for the sync loop bug updateFromRemote
-- Merge pull request #73 from schutm/patch-1
-- Merge pull request #78 from broekema41/feature/68-performance-improvements-import
-- Refs: #68 less waiting for files to be rendered during import
-- Don't bail update when encountering UID, PHOTO or an empty value
+- update too version bump
+- Merge pull request #85 from broekema41/feature/17-default-properties-for-creation
+- Refs #17 a logcal change to allow for testabillity of the new features separately
+- Refs #17 a littl cleanup befor pull review
+- Refs #17 add defaults to current file implemented as command p action, validation in default field inputs
+- Refs #17 we have settings page and the create new works
+- Refs: #83 just a little text change in the release flow
