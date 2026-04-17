@@ -36,7 +36,8 @@ const mockSettings: ContactsPluginSettings = {
     syncInterval: 900,
     authKey: '',
     authType: 'apikey'
-  }
+  },
+  createFieldsKeys:['N.FN']
 };
 
 const testDefaultSettings = {

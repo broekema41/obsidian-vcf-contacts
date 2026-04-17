@@ -1,6 +1,8 @@
 import { parseYaml, stringifyYaml, TFile } from "obsidian";
 import { getApp } from "src/context/sharedAppContext";
 
+import { frontMatterRender } from "./contactMdTemplate";
+
 export type Contact = {
 	data: Record<string, any>;
 	file: TFile;
@@ -20,6 +22,25 @@ export async function getFrontmatterFromFiles(files: TFile[]) {
   }
   return contactsData;
 }
+
+export async function updateFrontMatter(file: TFile, record: Record<string, any>) {
+  const app = getApp();
+  // The file object can be a cloned object and therefor we ask obsidian to fetch again.
+  const myFile = app.vault.getAbstractFileByPath(file.path);
+  if (!myFile || !(myFile instanceof TFile)) {
+    throw new Error("while updating the frontmatter file should always exist even if the TFile is cloned");
+  }
+  const content = await app.vault.read(myFile);
+  const match = content.match(/^---\n([\s\S]*?)\n---\n?/);
+  if (!match) {
+    return;
+  }
+  const body = content.slice(match[0].length);
+  const newFrontMatter= frontMatterRender(record);
+  const newContent = newFrontMatter + body;
+  await app.vault.modify(myFile, newContent);
+}
+
 
 export async function updateFrontMatterValue(file: TFile, key: string, value: string) {
   const app = getApp();

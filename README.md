@@ -145,6 +145,30 @@ You can attach profile pictures using:
 6. **left-click** contact server sync when active
 7. **left-click** export as .vcf file
 8. **left-click** process and import avatar from image file
+
+---
+
+### ⚡ Quick Actions
+
+The plugin provides command-based quick actions that can be accessed through Obsidian’s Command Palette.
+
+Open the Command Palette with:
+
+- **Ctrl + P** (Windows/Linux)
+- **Cmd + P** (macOS)
+
+Search for **“VCF Contacts”** to see all available commands.
+
+1) **VCF Contacts: Create Contact**  
+Create a new contact using your configured default fields.
+
+2) **VCF Contacts: Open Contacts Sidebar**  
+Open the contacts sidebar view.
+
+3) **VCF Contacts: Apply Default Fields to Current File**  
+Adds any missing default fields (as defined in **Settings → Default Contact Fields**) to the currently open contact file.  
+Existing fields are not overwritten.
+
 ---
 
 <!-- TOC --><a name="-create-a-new-contact"></a>

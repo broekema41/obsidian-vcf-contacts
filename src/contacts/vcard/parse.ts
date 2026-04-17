@@ -107,7 +107,6 @@ function parseVCardLine(line: string): VCardForObsidianRecord {
 
 	const propKey: string = property.toUpperCase();
 
-
 	let parsedData: Record<string, any> = {};
 
 	const typeValues:string = params["type"] ? `[${params["type"].join(",")}]` : "";
@@ -120,7 +119,9 @@ function parseVCardLine(line: string): VCardForObsidianRecord {
 		parsedData = parseStructuredField(propKey as keyof typeof StructuredFields, value, typeValues);
 	} else if (['BDAY', 'ANNIVERSARY'].includes(propKey)) {
 		parsedData[`${propKey}${typeValues}`] = formatVCardDate(value)
-	} else {
+  } else if (propKey.startsWith("X-")) {
+    parsedData[`${propKey}${typeValues}`] = value;
+  } else {
     if (propKey in VCardSupportedKey) {
       parsedData[`${propKey}${typeValues}`] = value;
     }

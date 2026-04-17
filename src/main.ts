@@ -1,6 +1,6 @@
 import "src/insights/insightLoading";
 
-import { Plugin } from 'obsidian';
+import {Notice, Plugin} from 'obsidian';
 import { initSettings } from "src/context/sharedSettingsContext";
 import { ContactsSettingTab } from 'src/ui/settings/settingsView';
 import { ContactsView } from "src/ui/sidebar/sidebarView";
@@ -8,6 +8,7 @@ import { CONTACTS_VIEW_CONFIG } from "src/util/constants";
 import myScrollTo from "src/util/myScrollTo";
 
 import { ContactsPluginSettings } from  './settings/settings.d';
+import {vcard} from "./contacts/vcard";
 
 export default class ContactsPlugin extends Plugin {
 	settings: ContactsPluginSettings;
@@ -42,6 +43,19 @@ export default class ContactsPlugin extends Plugin {
         const leaf = await this.activateSidebarView();
         leaf?.createNewContact()
       },
+    });
+
+    this.addCommand({
+      id: "contacts-apply-default-fields",
+      name: "Apply Default Fields to Current File",
+      callback: () => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) {
+          new Notice("No active file.");
+          return;
+        }
+        vcard.addDefaultFields(file)
+      }
     });
 	}
 

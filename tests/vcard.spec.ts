@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {DEFAULT_SETTINGS} from "../src/settings/setting";
 
 // Helper function to parse vCards and collect only those with valid slugs
-const parseValidVCards = async (vcfData: string) => {
+const parseValidVCards = async (vcfData: string) => {``
   const cards: VCardForObsidianRecord[] = [];
   for await (const [slug, card] of vcard.parse(vcfData))
     if (slug) cards.push(card);
@@ -220,7 +220,26 @@ END:VCARD`;
     expect(result[0]['N.GN']).toBeUndefined();
     expect(result[0]['N.FN']).toBeUndefined();
   });
-});
+
+  it('should parse custom X- properties with and without parameters', async () => {
+    const vcfWithXProps = `BEGIN:VCARD
+VERSION:4.0
+FN:Tech Company
+ORG:Tech Company
+X-ARCHIVED:FALSE
+X-FAVORITE-ICE-CREAM-FLAVOR;TYPE=PERSONAL:Mint Chocolate Chip
+END:VCARD`;
+
+    const result = await parseValidVCards(vcfWithXProps);
+
+    expect(result[0]['FN']).toBe('Tech Company');
+    expect(result[0]['ORG']).toBe('Tech Company');
+    expect(result[0]['X-ARCHIVED']).toBe('FALSE');
+    expect(result[0]['X-FAVORITE-ICE-CREAM-FLAVOR[PERSONAL]'])
+      .toBe('Mint Chocolate Chip');
+  });
+
+  });
 
 
 describe('vcard tostring', () => {
@@ -254,8 +273,6 @@ describe('vcard tostring', () => {
     expect(vcards).toMatch(/^END:VCARD$/m);
   });
 
-
-
   it('should be able revert the indexed fields to lines', async () => {
     const result = await vcard.toString([{ basename: 'hasDuplicateParameters.frontmatter' } as TFile]);
     const { vcards, errors } = result;
@@ -278,5 +295,18 @@ describe('vcard tostring', () => {
     expect(errors[0].message).not.toBe('');
   });
 
+  it('should include custom X- properties in vcard output', async () => {
+    const result = await vcard.toString([{ basename: 'xprops.frontmatter' } as TFile]);
+    const { vcards, errors } = result;
+
+    expect(errors).toEqual([]);
+    expect(vcards).toMatch(/^BEGIN:VCARD$/m);
+    expect(vcards).toMatch(/^VERSION:4.0$/m);
+    expect(vcards).toMatch(/^X-ARCHIVED:FALSE$/m);
+    expect(vcards).toMatch(
+      /^X-FAVORITE-ICE-CREAM-FLAVOR;TYPE=PERSONAL:Mint Chocolate Chip$/m
+    );
+    expect(vcards).toMatch(/^END:VCARD$/m);
+  });
 
 });
