@@ -1,1 +1,1 @@
-Releasing 2.4.0 minor including #17 #83 #85
+Releasing 2.4.1 patch including #90 #92 #93 #94
