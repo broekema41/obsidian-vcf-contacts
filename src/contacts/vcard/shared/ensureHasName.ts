@@ -24,9 +24,9 @@ export async function ensureHasName(
           vCardObject["N.FN"] = nameData.family;
           vCardObject["N.SUFFIX"] ??= "";
         } else {
-          vCardObject["FN"] ??= nameData.fn;
+          vCardObject["FN"] = nameData.fn;
         }
-        vCardObject["KIND"] ??= nameData.kind;
+        vCardObject["KIND"] = nameData.kind;
         resolve(vCardObject);
       }).open();
     });
