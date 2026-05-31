@@ -3,7 +3,7 @@ import {Contact, mdRender} from "src/contacts";
 import {vcard} from "src/contacts/vcard";
 import {getApp} from "src/context/sharedAppContext";
 import {getSettings} from "src/context/sharedSettingsContext";
-import {createContactFile, createFileName} from "src/file/file";
+import {createContactFile} from "src/file/file";
 import {InsightProcessor, InsightQueItem, PropsRenderGroup, RunType} from "src/insights/insight.d";
 import {insightQueueStore} from "src/insights/insightsQueStore";
 import {ContactsPluginSettings} from "src/settings/settings";
@@ -15,10 +15,16 @@ const ImportUnknownVcardToVault = async (queItem: InsightQueItem) => {
   const mySettings: ContactsPluginSettings = getSettings();
   const rawCard = await sync.pullFromRemote(queItem.data.href);
   if (rawCard) {
-    const records = await vcard.parse(rawCard.raw).next();
-    if (records?.value?.[1] && typeof records?.value?.[1] !== 'string') {
-      const mdContent = mdRender(records.value[1], mySettings.defaultHashtag);
-      await createContactFile(app, mySettings.contactsFolder, mdContent, createFileName(records.value[1]))
+    // #90 for now made the same as in the rootView skipping the record without notifying the user.
+    for await (const [slug, record] of vcard.parse(rawCard.raw)) {
+      if (slug) {
+        const mdContent = mdRender(record, mySettings.defaultHashtag);
+        const filename = slug + '.md';
+        await createContactFile(app, mySettings.contactsFolder, mdContent, filename);
+      } else {
+        // Contact has no valid name/slug
+        console.warn("Skipping contact without name", record);
+      }
       await insightQueueStore.remove(queItem);
     }
   }
