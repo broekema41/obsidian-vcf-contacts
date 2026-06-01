@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
+    "paths": {
+      "src/*": ["./src/*"],
+      "tests/*": ["./tests/*"]
+    },
     "inlineSourceMap": true,
     "inlineSources": true,
     "module": "ESNext",
@@ -18,7 +21,11 @@
       "ES6",
       "ES7"
     ],
-    "allowSyntheticDefaultImports": true
+    "types": [
+      "node"
+    ],
+    "allowSyntheticDefaultImports": true,
+    "ignoreDeprecations": "6.0"
   },
   "include": [
     "**/*.ts",

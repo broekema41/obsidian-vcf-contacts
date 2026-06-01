@@ -10,10 +10,11 @@ import { SynchronizationSettings } from "src/ui/settings/components/synchronizat
 export class ContactsSettingTab extends PluginSettingTab {
   plugin: ContactsPlugin;
   app: App;
-  root: Root | null;
+  root: Root | null = null;
 
   constructor(app: App, plugin: ContactsPlugin) {
     super(app, plugin);
+    this.app = app;
     this.plugin = plugin;
   }
 

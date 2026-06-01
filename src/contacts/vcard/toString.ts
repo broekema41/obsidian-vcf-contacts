@@ -88,7 +88,8 @@ export async function toString(contactFiles: TFile[]): Promise<VCardToStringRepl
       const singleVcard = generateVCard(file)
       vCards.push(singleVcard)
     } catch (err) {
-      vCardsErrors.push({"status": "error", "file": file.basename, "message": err.message})
+      const message = err instanceof Error ? err.message : String(err);
+      vCardsErrors.push({"status": "error", "file": file.basename, "message": message})
     }
   })
 

@@ -103,16 +103,24 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
 			}, 450); // place our update after obsidian has a opportunity to run some code
 		};
 
-		vault.on("create", updateFiles);
-		vault.on("modify", updateFiles);
-		vault.on("rename", updateFiles);
-		vault.on("delete", updateFiles);
+		// @ts-ignore
+    vault.on("create", updateFiles);
+		// @ts-ignore
+    vault.on("modify", updateFiles);
+		// @ts-ignore
+    vault.on("rename", updateFiles);
+		// @ts-ignore
+    vault.on("delete", updateFiles);
 
 		return () => {
-			vault.off("create", updateFiles);
-			vault.off("modify", updateFiles);
-			vault.off("rename", updateFiles);
-			vault.off("delete", updateFiles);
+			// @ts-ignore
+      vault.off("create", updateFiles);
+			// @ts-ignore
+      vault.off("modify", updateFiles);
+			// @ts-ignore
+      vault.off("rename", updateFiles);
+			// @ts-ignore
+      vault.off("delete", updateFiles);
 		};
 	}, [vault, mySettings.contactsFolder]);
 
@@ -126,6 +134,7 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
 
     return () => {
       myScrollTo.clearDebounceTimer();
+      // @ts-ignore
       workspace.off("active-leaf-change",  myScrollTo.handleLeafEvent);
     };
   }, [workspace]);
@@ -153,8 +162,12 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
               <HeaderView
                 onSortChange={setSort}
                 importVCF={() => {
-                  openFilePicker('.vcf').then(async (fileContent: string) => {
-                    await importVCFContacts(fileContent, app, mySettings);
+                  openFilePicker('.vcf').then(async (fileContent: string | Blob) => {
+                    const content =
+                      typeof fileContent === 'string'
+                        ? fileContent
+                        : await fileContent.text();
+                    await importVCFContacts(content, app, mySettings);
                   })
                 }}
                 exportAllVCF={async() => {
@@ -185,7 +198,8 @@ export const SidebarRootView = (props: SidebarRootViewProps) => {
                     await processAvatar(contact);
                     setTimeout(() => { parseContacts() }, 50);
                   } catch (err) {
-                    new Notice(err.message);
+                    const message = err instanceof Error ? err.message : String(err);
+                    new Notice(message);
                   }
                 })();
               }}

@@ -7,12 +7,12 @@ import { ContactsView } from "src/ui/sidebar/sidebarView";
 import { CONTACTS_VIEW_CONFIG } from "src/util/constants";
 import myScrollTo from "src/util/myScrollTo";
 
-import { ContactsPluginSettings } from  './settings/settings.d';
-import {vcard} from "./contacts/vcard";
 import {updateFrontMatter} from "./contacts";
+import {vcard} from "./contacts/vcard";
+import { ContactsPluginSettings } from  './settings/settings.d';
 
 export default class ContactsPlugin extends Plugin {
-	settings: ContactsPluginSettings;
+	settings!: ContactsPluginSettings;
 
 	async onload() {
 
