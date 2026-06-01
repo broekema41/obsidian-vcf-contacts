@@ -1,5 +1,2 @@
 ## Changes
-- Merge pull request #94 from broekema41/bug/90-import-stops-on-no-name-records
-- Refs #90: made multi import and sync import all the same skipping no name records
-- Merge pull request #93 from broekema41/bug/92-failing-on-missing-fn
-- Refs #92: solving a bug where assignment of fn was not performed
+- Refs #95: bumping versions of test and lint dependancies  and on too latest typscript for less linting warnings

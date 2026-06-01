@@ -1,1 +1,1 @@
-Releasing 2.4.1 patch including #90 #92 #93 #94
+Releasing 2.4.2 patch including #95
