@@ -5,6 +5,7 @@ import {getSettings, setSettings, updateSetting} from "src/context/sharedSetting
 import {SyncSelected} from "src/settings/settings";
 import {carddavGenericAdapter} from "src/sync/adapters/carddavGeneric";
 import CarddavSettings from "src/ui/settings/components/carddavSettings";
+import {oauth2} from "src/sync/auth";
 
 const initCardavSettings = {
   addressBookUrl: "",
@@ -25,11 +26,25 @@ export function SynchronizationSettings() {
   });
 
   const enableSync = async () => {
-    if (syncSelected !== 'CardDAV') {
-      setWarning('Kindly select a synchronization method and provide the required connection information. Thank you!');
+    if (!['CardDAV', 'GoogleContacts'].includes(syncSelected)) {
+      setWarning(
+        'Kindly select a synchronization method and provide the required connection information. Thank you!'
+      );
       return;
     }
 
+    switch (syncSelected) {
+      case 'CardDAV':
+        await enableCardDAV();
+        break;
+
+      case 'GoogleContacts':
+        await enableGoogleContacts();
+        break;
+    }
+  };
+
+  const enableCardDAV = async () => {
     try {
       const result = await carddavGenericAdapter().checkConnectivity(carddavSettings);
       if (result.errorMessage) {
@@ -59,7 +74,17 @@ export function SynchronizationSettings() {
     } catch (err: any) {
       setWarning(`failed to enable connection! ${err?.message || err || 'Unknown error'}.`);
     }
-  };
+  }
+
+  const enableGoogleContacts = async () => {
+    try {
+      await oauth2.login();
+      console.log('aaaaaaaa');
+    } catch (err: any) {
+      setWarning(`failed to enable connection!`);
+    }
+  }
+
 
   const disableSync = async () => {
     setSyncEnabled(false);
@@ -150,6 +175,7 @@ export function SynchronizationSettings() {
                 }}>
                 <option value="None">No synchronization</option>
                 <option value="CardDAV">CardDAV address book</option>
+                <option value="GoogleContacts">Google Contacts</option>
               </select>
             </div>
           </div>

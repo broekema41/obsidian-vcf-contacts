@@ -1,6 +1,6 @@
 
 export type AuthType = "basic" | "apikey";
-export type SyncSelected = "None" | "CardDAV";
+export type SyncSelected = "None" | "CardDAV" | "GoogleContacts";
 
 export interface ContactsPluginSettings {
   contactsFolder: string;
