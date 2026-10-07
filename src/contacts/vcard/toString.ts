@@ -1,5 +1,6 @@
 import { TFile } from "obsidian";
 import { parseKey } from "src/contacts";
+import { createGroupNamer, isCustomLabel } from "src/contacts/vcard/shared/propertyGroups";
 import { StructuredFields } from "src/contacts/vcard/shared/structuredFields";
 import { VCardToStringError, VCardToStringReply } from "src/contacts/vcard/shared/vcard";
 import { getApp } from "src/context/sharedAppContext";
@@ -8,7 +9,22 @@ function filterNonNull<T>(array: (T | null | undefined)[]): T[] {
 	return array.filter((item): item is T => item !== null && item !== undefined);
 }
 
-function renderStructuredLines(structuredFields:[string, string][]):string[] {
+/**
+ * Renders `EMAIL[School]` as a grouped property with its label:
+ *    item1.EMAIL:value
+ *    item1.X-ABLabel:School
+ * Standard types keep rendering as `EMAIL;TYPE=WORK:value`.
+ */
+function renderProperty(key: string, type: string | undefined, value: string, nextGroup: () => string): string {
+	if (type && isCustomLabel(key, type)) {
+		const group = nextGroup();
+		return `${group}.${key}:${value}\n${group}.X-ABLabel:${type}`;
+	}
+	const typeParam = type ? `;TYPE=${type}` : '';
+	return `${key}${typeParam}:${value}`;
+}
+
+function renderStructuredLines(structuredFields:[string, string][], nextGroup: () => string):string[] {
 	const fields =  Object.fromEntries(structuredFields);
 	const partialKeys = structuredFields
 		.map(([key]) => key.includes('.') ? key.split('.')[0] : null);
@@ -16,13 +32,12 @@ function renderStructuredLines(structuredFields:[string, string][]):string[] {
 
 	const structuredLines = uniqueKeys.map((key) => {
 		const keyObj = parseKey(key);
-		const type = keyObj.type ? `;TYPE=${keyObj.type}` : '';
 		switch (keyObj.key) {
 			case 'N': {
-				return `N${type}:${StructuredFields.N.map(field => fields[key + '.' + field] || "").join(";")}`;
+				return renderProperty('N', keyObj.type, StructuredFields.N.map(field => fields[key + '.' + field] || "").join(";"), nextGroup);
 			}
 			case 'ADR': {
-				return `ADR${type}:${StructuredFields.ADR.map(field => fields[key + '.' + field] || "").join(";")}`;
+				return renderProperty('ADR', keyObj.type, StructuredFields.ADR.map(field => fields[key + '.' + field] || "").join(";"), nextGroup);
 			}
 			default: {
 				return '';
@@ -33,10 +48,9 @@ function renderStructuredLines(structuredFields:[string, string][]):string[] {
 	return structuredLines.filter((line) => line !== '');
 }
 
-function renderSingleKey([key, value]:[string, string]):string  {
+function renderSingleKey([key, value]:[string, string], nextGroup: () => string):string  {
   const keyObj = parseKey(key);
-	const type = keyObj.type ? `;TYPE=${keyObj.type}` : '';
-	return `${keyObj.key}${type}:${value}`;
+	return renderProperty(keyObj.key, keyObj.type, value, nextGroup);
 }
 
 function generateVCard(file: TFile): string {
@@ -71,8 +85,9 @@ function generateVCard(file: TFile): string {
     singleLineFields.push(['FN', file.basename]);
   }
 
-  const structuredLines = renderStructuredLines(structuredFields);
-  const singleLines = singleLineFields.map(renderSingleKey);
+  const nextGroup = createGroupNamer();
+  const structuredLines = renderStructuredLines(structuredFields, nextGroup);
+  const singleLines = singleLineFields.map((field) => renderSingleKey(field, nextGroup));
   const lines = structuredLines.concat(singleLines);
 
   return `BEGIN:VCARD\n${lines.join("\n")}\nEND:VCARD`;

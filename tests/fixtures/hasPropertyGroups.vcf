@@ -1,0 +1,22 @@
+BEGIN:VCARD
+VERSION:4.0
+FN;PREF=1:Ada Lovelace
+N:Lovelace;Ada;;;
+TEL;PREF=1:555-0100
+ITEM1.EMAIL;PREF=1:ada@example.com
+UID:proton-web-00000000-0000-0000-0000-000000000000
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Grace;;;
+FN:Grace Hopper
+item1.EMAIL;TYPE=INTERNET:grace@school.example.edu
+item1.X-ABLabel:School
+item2.X-ABLabel:Dr. Office
+item2.TEL;TYPE=VOICE:555-0199
+item3.TEL;TYPE=CELL:555-0123
+item4.URL:https://grace.example.com
+item4.X-ABLabel:_$!<HomePage>!$_
+item5.ADR;TYPE=HOME:;;1 Cabin Road;Lakeside;;12345;USA
+item5.X-ABLabel:Cabin
+END:VCARD
