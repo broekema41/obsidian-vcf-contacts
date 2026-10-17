@@ -72,13 +72,22 @@ async function nodeRequest(
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const client = require(protocol);
 
+  // Serialize up front so we can send a Content-Length. Without it Node falls
+  // back to chunked encoding, which some servers (e.g. Radicale) read as an empty body.
+  let payload: string | Buffer | undefined;
+  if (body) {
+    payload = typeof body === 'object' && !Buffer.isBuffer(body) ? JSON.stringify(body) : body;
+  }
+
   return new Promise((resolve, reject) => {
     const options = {
       method,
       hostname: parsedUrl.hostname,
       port: parsedUrl.port,
       path: parsedUrl.pathname + parsedUrl.search,
-      headers,
+      headers: payload !== undefined
+        ? { ...headers, 'Content-Length': Buffer.byteLength(payload) }
+        : headers,
     };
 
     const req = client.request(options, (res: any) => {
@@ -99,12 +108,8 @@ async function nodeRequest(
       reject(err);
     });
 
-    if (body) {
-      if (typeof body === 'object' && !Buffer.isBuffer(body)) {
-        req.write(JSON.stringify(body));
-      } else {
-        req.write(body);
-      }
+    if (payload !== undefined) {
+      req.write(payload);
     }
     req.end();
   });
