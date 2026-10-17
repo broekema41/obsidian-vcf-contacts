@@ -455,3 +455,8 @@
   right: 4px;
   padding: 4px;
 }
+
+.vcf-secret-field input.is-saved::placeholder {
+  color: var(--text-normal);
+  opacity: 1;
+}

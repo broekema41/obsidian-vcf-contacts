@@ -19,7 +19,9 @@ interface CarddavSettingsProps {
   onForgetSaved: () => void;
 }
 
-const KEEP_SAVED = 'Saved, leave empty to keep';
+// Looks like a filled-in field; the real secret is never put back in the form.
+const SAVED_MASK = '••••••••';
+const SAVED_TITLE = 'Saved. Type to replace it.';
 
 function ForgetButton({ label, onClick }: { label: string; onClick: () => void }) {
   // Lucide "x", the icon Obsidian uses for clearing.
@@ -85,9 +87,10 @@ export default function CarddavSettings({ carddavSettings, setCarddavSettings, s
         <div className="setting-item-control">
           <div className="vcf-secret-field">
             <input
-              className="textfield"
+              className={savedAuthType === 'basic' ? 'textfield is-saved' : 'textfield'}
               type="password"
-              placeholder={savedAuthType === 'basic' ? KEEP_SAVED : 'password'}
+              placeholder={savedAuthType === 'basic' ? SAVED_MASK : 'password'}
+              title={savedAuthType === 'basic' ? SAVED_TITLE : undefined}
               autoComplete="new-password"
               value={carddavSettings.password}
               disabled={locked}
@@ -107,9 +110,10 @@ export default function CarddavSettings({ carddavSettings, setCarddavSettings, s
         <div className="setting-item-control">
           <div className="vcf-secret-field">
             <input
-              className="textfield"
+              className={savedAuthType === 'apikey' ? 'textfield is-saved' : 'textfield'}
               type="password"
-              placeholder={savedAuthType === 'apikey' ? KEEP_SAVED : 'API key'}
+              placeholder={savedAuthType === 'apikey' ? SAVED_MASK : 'API key'}
+              title={savedAuthType === 'apikey' ? SAVED_TITLE : undefined}
               autoComplete="new-password"
               value={carddavSettings.apiKey}
               disabled={locked}
