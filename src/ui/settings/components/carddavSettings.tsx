@@ -15,11 +15,26 @@ interface CarddavSettingsProps {
   savedAuthType: AuthType | undefined;
   /** Fields are read-only while sync is enabled. */
   locked: boolean;
+  /** Forget the saved password or API key. */
+  onForgetSaved: () => void;
 }
 
 const KEEP_SAVED = 'Saved, leave empty to keep';
 
-export default function CarddavSettings({ carddavSettings, setCarddavSettings, savedAuthType, locked }: CarddavSettingsProps) {
+function ForgetButton({ label, onClick }: { label: string; onClick: () => void }) {
+  // Lucide "x", the icon Obsidian uses for clearing.
+  return (
+    <button type="button" className="clickable-icon" aria-label={label} title={label} onClick={onClick}>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="svg-icon lucide-x">
+        <path d="M18 6 6 18"/>
+        <path d="m6 6 12 12"/>
+      </svg>
+    </button>
+  );
+}
+
+export default function CarddavSettings({ carddavSettings, setCarddavSettings, savedAuthType, locked, onForgetSaved }: CarddavSettingsProps) {
 
    return (
     <>
@@ -77,6 +92,7 @@ export default function CarddavSettings({ carddavSettings, setCarddavSettings, s
             disabled={locked}
             onChange={e => setCarddavSettings({ ...carddavSettings, password: e.target.value })}
           />
+          {savedAuthType === 'basic' && !locked ? <ForgetButton label="Forget saved password" onClick={onForgetSaved}/> : null}
         </div>
       </div>
       <div className="setting-item">
@@ -96,6 +112,7 @@ export default function CarddavSettings({ carddavSettings, setCarddavSettings, s
             disabled={locked}
             onChange={e => setCarddavSettings({ ...carddavSettings, apiKey: e.target.value })}
           />
+          {savedAuthType === 'apikey' && !locked ? <ForgetButton label="Forget saved API key" onClick={onForgetSaved}/> : null}
         </div>
       </div>
     </>

@@ -80,6 +80,11 @@ export function SynchronizationSettings() {
     }
   };
 
+  const forgetSaved = async () => {
+    setSavedCredentials({ ...savedCredentials, authKey: '' });
+    await updateSetting('CardDAV.authKey', '');
+  };
+
   const connectedAs = savedCredentials.authType === 'apikey'
     ? 'Connected with API key'
     : `Connected as ${usernameFromAuthKey(savedCredentials.authKey) || 'anonymous'}`;
@@ -184,6 +189,7 @@ export function SynchronizationSettings() {
               setCarddavSettings={setCarddavSettings}
               savedAuthType={hasStoredCredentials(savedCredentials) ? savedCredentials.authType : undefined}
               locked={syncEnabled}
+              onForgetSaved={forgetSaved}
             />
           )}
         </>
