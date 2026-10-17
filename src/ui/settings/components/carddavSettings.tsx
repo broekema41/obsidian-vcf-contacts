@@ -40,7 +40,7 @@ export default function CarddavSettings({ carddavSettings, setCarddavSettings, s
     <>
       <div className="setting-item">
         <div className="setting-item-info">
-          <div className="setting-item-name">Address Book URL</div>
+          <div className="setting-item-name">Address book URL</div>
           <div className="setting-item-description">
             URL of your CardDAV address book.
           </div>
@@ -60,7 +60,7 @@ export default function CarddavSettings({ carddavSettings, setCarddavSettings, s
         <div className="setting-item-info">
           <div className="setting-item-name">Username</div>
           <div className="setting-item-description">
-            account username.
+            Username of your CardDAV account.
           </div>
         </div>
         <div className="setting-item-control">
@@ -79,40 +79,44 @@ export default function CarddavSettings({ carddavSettings, setCarddavSettings, s
         <div className="setting-item-info">
           <div className="setting-item-name">Password</div>
           <div className="setting-item-description">
-            CardDAV account password.
+            Password of your CardDAV account.
           </div>
         </div>
         <div className="setting-item-control">
-          <input
-            className="textfield"
-            type="password"
-            placeholder={savedAuthType === 'basic' ? KEEP_SAVED : 'password'}
-            autoComplete="new-password"
-            value={carddavSettings.password}
-            disabled={locked}
-            onChange={e => setCarddavSettings({ ...carddavSettings, password: e.target.value })}
-          />
-          {savedAuthType === 'basic' && !locked ? <ForgetButton label="Forget saved password" onClick={onForgetSaved}/> : null}
+          <div className="vcf-secret-field">
+            <input
+              className="textfield"
+              type="password"
+              placeholder={savedAuthType === 'basic' ? KEEP_SAVED : 'password'}
+              autoComplete="new-password"
+              value={carddavSettings.password}
+              disabled={locked}
+              onChange={e => setCarddavSettings({ ...carddavSettings, password: e.target.value })}
+            />
+            {savedAuthType === 'basic' && !locked ? <ForgetButton label="Forget saved password" onClick={onForgetSaved}/> : null}
+          </div>
         </div>
       </div>
       <div className="setting-item">
         <div className="setting-item-info">
-          <div className="setting-item-name">API Key</div>
+          <div className="setting-item-name">API key</div>
           <div className="setting-item-description">
-            API key used instead of username and password.
+            Used instead of a username and password.
           </div>
         </div>
         <div className="setting-item-control">
-          <input
-            className="textfield"
-            type="password"
-            placeholder={savedAuthType === 'apikey' ? KEEP_SAVED : 'API key'}
-            autoComplete="new-password"
-            value={carddavSettings.apiKey}
-            disabled={locked}
-            onChange={e => setCarddavSettings({ ...carddavSettings, apiKey: e.target.value })}
-          />
-          {savedAuthType === 'apikey' && !locked ? <ForgetButton label="Forget saved API key" onClick={onForgetSaved}/> : null}
+          <div className="vcf-secret-field">
+            <input
+              className="textfield"
+              type="password"
+              placeholder={savedAuthType === 'apikey' ? KEEP_SAVED : 'API key'}
+              autoComplete="new-password"
+              value={carddavSettings.apiKey}
+              disabled={locked}
+              onChange={e => setCarddavSettings({ ...carddavSettings, apiKey: e.target.value })}
+            />
+            {savedAuthType === 'apikey' && !locked ? <ForgetButton label="Forget saved API key" onClick={onForgetSaved}/> : null}
+          </div>
         </div>
       </div>
     </>

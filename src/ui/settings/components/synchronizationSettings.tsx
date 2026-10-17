@@ -151,7 +151,7 @@ export function SynchronizationSettings() {
             <div className="setting-item-info">
               <div className="setting-item-name">Synchronization</div>
               <div className="setting-item-description">
-                {syncEnabled ? <div className="mod-success">CardDAV sync Enabled. {connectedAs}.</div> : ''}
+                {syncEnabled ? <div className="mod-success">CardDAV sync enabled. {connectedAs}.</div> : ''}
                 {syncEnabled ? <div>Disable sync to change the connection settings.</div> : ''}
                 <div className="mod-warning">{warning}</div>
               </div>
