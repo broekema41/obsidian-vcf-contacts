@@ -438,3 +438,25 @@
     background-color: var(--background-modifier-active);
   }
 }
+
+/* Clear icon inside a saved secret field in the sync settings. */
+.vcf-secret-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.vcf-secret-field input {
+  padding-right: 28px;
+}
+
+.vcf-secret-field .clickable-icon {
+  position: absolute;
+  right: 4px;
+  padding: 4px;
+}
+
+.vcf-secret-field input.is-saved::placeholder {
+  color: var(--text-normal);
+  opacity: 1;
+}
