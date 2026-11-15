@@ -20,6 +20,20 @@ beforeAll(async () => {
     req.on('data', (chunk: string) => (body += chunk));
     req.on('end', () => {
       lastRequest = { headers: req.headers, body };
+
+      // error scenario passthrew test
+      if (req.url === '/unauthorized') {
+        res.writeHead(401, { 'Content-Type': 'text/plain' });
+        res.end('Authentication required');
+        return;
+      }
+
+      // Simulate a connection reset triggering catch scenario
+      if (req.url === '/connection-reset') {
+        req.socket.destroy();
+        return;
+      }
+
       res.writeHead(207);
       res.end();
     });
@@ -66,4 +80,29 @@ describe('PlatformHttpClient request body', () => {
 
     expect(lastRequest?.headers['content-length']).toBeUndefined();
   });
+
+  it('maps HTTP errors and preserves the original response', async () => {
+    const response = await PlatformHttpClient.request({
+      url: `${baseUrl}unauthorized`
+    });
+
+    expect(response.status).toBe(401);
+    expect(response.errorMessage).toBe('401 Unauthorized');
+    expect(response.data).toBe('Authentication required');
+    expect(response.headers['content-type']).toBe('text/plain');
+  });
+
+  it('maps connection errors to a understandable response', async () => {
+    const response = await PlatformHttpClient.request({
+      url: `${baseUrl}connection-reset`,
+    });
+
+    expect(response.status).toBe(502);
+    expect(response.errorMessage).toBe(
+      '502 refused connection or is not available.'
+    );
+    expect(response.data).toBe('');
+    expect(response.headers).toEqual({});
+  });
+
 });
