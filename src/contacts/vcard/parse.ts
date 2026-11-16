@@ -1,4 +1,5 @@
 import { VCardForObsidianRecord, VCardSupportedKey } from "src/contacts/vcard";
+import { collectGroupLabels, splitGroup } from "src/contacts/vcard/shared/propertyGroups";
 import { StructuredFields } from "src/contacts/vcard/shared/structuredFields";
 import { createNameSlug } from "src/util/nameUtils";
 import { photoLineToV4 } from "src/util/photoLine";
@@ -94,10 +95,15 @@ function parseStructuredField(key: keyof typeof StructuredFields, value: string,
 	return result;
 }
 
-function parseVCardLine(line: string): VCardForObsidianRecord {
+/**
+ * @param groupLabels X-ABLabel values by group name, see collectGroupLabels.
+ */
+function parseVCardLine(line: string, groupLabels: Record<string, string> = {}): VCardForObsidianRecord {
 	const [key, ...valueParts] = line.split(":");
 	const value = valueParts.join(":").trim();
-	const [property, ...paramParts] = key.split(";");
+	const [groupedProperty, ...paramParts] = key.split(";");
+	// Strip the optional group prefix, `item1.EMAIL` is parsed as `EMAIL`.
+	const { group, name: property } = splitGroup(groupedProperty);
 
 	const params = paramParts.reduce((acc, part) => {
 		const [paramKey, paramValue] = part.split("=");
@@ -109,7 +115,16 @@ function parseVCardLine(line: string): VCardForObsidianRecord {
 
 	let parsedData: Record<string, any> = {};
 
-	const typeValues:string = params["type"] ? `[${params["type"].join(",")}]` : "";
+	if (group && propKey === 'X-ABLABEL') {
+		// Consumed by collectGroupLabels and stored as the label of its grouped property.
+		return parsedData;
+	}
+
+	// A custom label takes the place of the TYPE values: `EMAIL[School]`.
+	const label = group ? groupLabels[group] : undefined;
+	const typeValues:string = label
+		? `[${label}]`
+		: params["type"] ? `[${params["type"].join(",")}]` : "";
 	if (key.includes('PHOTO') && (key.includes('ENCODING=BASE64') || key.includes('ENCODING=b') )) {
     const v4Photo  = photoLineToV4(line)
 		parsedData['PHOTO'] = v4Photo ? v4Photo : line;
@@ -167,9 +182,10 @@ export async function* parse(vCardData: string): AsyncGenerator<[string | undefi
   for (const singleVCard of singles) {
     const unfoldedLines = unfoldVCardLines(singleVCard);
     const vCardObject: VCardForObsidianRecord = {};
+    const groupLabels = collectGroupLabels(unfoldedLines);
 
     for (const line of unfoldedLines) {
-      const parsedLine = parseVCardLine(line);
+      const parsedLine = parseVCardLine(line, groupLabels);
       if (parsedLine) {
         const indexedParsedLine = indexIfKeysExist(vCardObject, parsedLine)
         Object.assign(vCardObject, indexedParsedLine);
