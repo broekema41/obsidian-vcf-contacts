@@ -239,6 +239,29 @@ END:VCARD`;
       .toBe('Mint Chocolate Chip');
   });
 
+
+  it('should strip property group prefixes like Proton\'s ITEM1.EMAIL', async () => {
+    const vcf = fixtures.readVcfFixture('hasPropertyGroups.vcf');
+    const result = await parseValidVCards(vcf);
+    expect(result[0]['EMAIL']).toBe('ada@example.com');
+    expect(result[0]['TEL']).toBe('555-0100');
+  });
+
+  it('should store a grouped X-ABLabel as the label of its property', async () => {
+    const vcf = fixtures.readVcfFixture('hasPropertyGroups.vcf');
+    const result = await parseValidVCards(vcf);
+    expect(result[1]['EMAIL[School]']).toBe('grace@school.example.edu');
+    // The label may come before its property, and characters used by the key notation are replaced
+    expect(result[1]['TEL[Dr Office]']).toBe('555-0199');
+    // Grouped properties without a label keep their TYPE
+    expect(result[1]['TEL[CELL]']).toBe('555-0123');
+    // Apple style built-in labels are unwrapped
+    expect(result[1]['URL[HomePage]']).toBe('https://grace.example.com');
+    expect(result[1]['ADR[Cabin].STREET']).toBe('1 Cabin Road');
+    // Labels are not stored as properties of their own
+    expect(Object.keys(result[1]).some((key) => key.startsWith('X-ABLABEL'))).toBe(false);
+  });
+
   });
 
 
@@ -307,6 +330,39 @@ describe('vcard tostring', () => {
       /^X-FAVORITE-ICE-CREAM-FLAVOR;TYPE=PERSONAL:Mint Chocolate Chip$/m
     );
     expect(vcards).toMatch(/^END:VCARD$/m);
+  });
+
+  it('should export custom labels as property groups with an X-ABLabel', async () => {
+    const result = await vcard.toString([{ basename: 'propertyGroups.frontmatter' } as TFile]);
+    const { vcards, errors } = result;
+    expect(errors).toEqual([]);
+
+    // Standard types stay TYPE parameters
+    expect(vcards).toMatch(/^EMAIL;TYPE=WORK:grace@work\.example\.com$/m);
+    expect(vcards).toMatch(/^TEL;TYPE=CELL,VOICE:555-0123$/m);
+
+    const groupOf = (line: RegExp) => vcards.match(line)?.[1];
+    const emailGroup = groupOf(/^(item\d+)\.EMAIL:grace@school\.example\.edu$/m);
+    const adrGroup = groupOf(/^(item\d+)\.ADR:;;1 Cabin Road;Lakeside;;;$/m);
+    expect(emailGroup).toBeDefined();
+    expect(adrGroup).toBeDefined();
+    expect(vcards).toContain(`${emailGroup}.X-ABLabel:School`);
+    expect(vcards).toContain(`${adrGroup}.X-ABLabel:Cabin`);
+
+    // Every labeled property gets its own group
+    const groups = (vcards.match(/^item\d+(?=\.X-ABLabel:)/gm) || []);
+    expect(groups.length).toBe(4);
+    expect(new Set(groups).size).toBe(4);
+  });
+
+  it('should keep custom labels through an export and import round trip', async () => {
+    const { vcards } = await vcard.toString([{ basename: 'propertyGroups.frontmatter' } as TFile]);
+    const [card] = await parseValidVCards(vcards);
+    expect(card['EMAIL[School]']).toBe('grace@school.example.edu');
+    expect(card['EMAIL[WORK]']).toBe('grace@work.example.com');
+    expect(card['TEL[Dr Office]']).toBe('555-0199');
+    expect(card['TEL[1:Dr Office]']).toBe('555-0198');
+    expect(card['ADR[Cabin].STREET']).toBe('1 Cabin Road');
   });
 
 });
