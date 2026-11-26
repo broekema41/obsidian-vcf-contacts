@@ -2,16 +2,28 @@ import {Platform} from "obsidian";
 import * as React from "react";
 import {useState} from "react";
 import {getSettings, setSettings, updateSetting} from "src/context/sharedSettingsContext";
+import {
+  hasStoredCredentials,
+  resolveCredentials,
+  StoredCredentials,
+  usernameFromAuthKey
+} from "src/settings/carddavCredentials";
 import {SyncSelected} from "src/settings/settings";
 import {carddavGenericAdapter} from "src/sync/adapters/carddavGeneric";
-import CarddavSettings from "src/ui/settings/components/carddavSettings";
+import CarddavSettings, {CarddavSettingsInterface} from "src/ui/settings/components/carddavSettings";
 
-const initCardavSettings = {
-  addressBookUrl: "",
-  username: "",
-  password: "",
-  authKey: ""
-};
+/**
+ * Secrets are never shown again. The username is recovered from the saved
+ * basic auth key so the form reflects what is configured.
+ */
+function formFromSaved(addressBookUrl: string, saved: StoredCredentials): CarddavSettingsInterface {
+  return {
+    addressBookUrl,
+    username: saved.authType === 'basic' ? usernameFromAuthKey(saved.authKey) : '',
+    password: '',
+    apiKey: ''
+  };
+}
 
 export function SynchronizationSettings() {
   const isDisabled = Platform.isMobileApp;
@@ -19,10 +31,13 @@ export function SynchronizationSettings() {
   const initSettings = getSettings();
   const [syncEnabled, setSyncEnabled] = useState<boolean>(initSettings.syncEnabled);
   const [syncSelected, setSyncSelected] = useState<SyncSelected>(initSettings.syncSelected);
-  const [carddavSettings, setCarddavSettings] = useState({
-    ...initCardavSettings,
-    addressBookUrl: initSettings.CardDAV.addressBookUrl
+  const [savedCredentials, setSavedCredentials] = useState<StoredCredentials>({
+    authType: initSettings.CardDAV.authType,
+    authKey: initSettings.CardDAV.authKey
   });
+  const [carddavSettings, setCarddavSettings] = useState<CarddavSettingsInterface>(
+    formFromSaved(initSettings.CardDAV.addressBookUrl, savedCredentials)
+  );
 
   const enableSync = async () => {
     if (syncSelected !== 'CardDAV') {
@@ -30,8 +45,15 @@ export function SynchronizationSettings() {
       return;
     }
 
+    const resolved = resolveCredentials(carddavSettings, savedCredentials);
+    if (!resolved.ok) {
+      setWarning(resolved.error);
+      return;
+    }
+    const credentials: StoredCredentials = { authType: resolved.authType, authKey: resolved.authKey };
+
     try {
-      const result = await carddavGenericAdapter().checkConnectivity(carddavSettings);
+      const result = await carddavGenericAdapter().checkConnectivity(carddavSettings.addressBookUrl, credentials);
       if (result.errorMessage) {
         setWarning(`failed to enable connection! ${result.errorMessage}. Please check your connection settings.`);
         return;
@@ -46,13 +68,10 @@ export function SynchronizationSettings() {
       updateSetting.CardDAV = {
         addressBookUrl: carddavSettings.addressBookUrl,
         syncInterval: 900,
-        authType: carddavSettings.authKey ? 'apikey' : 'basic',
-        authKey: carddavSettings.authKey ? carddavSettings.authKey : btoa(`${carddavSettings.username}:${carddavSettings.password}`)
+        ...credentials
       };
-      setCarddavSettings({
-        ...initCardavSettings,
-        addressBookUrl: updateSetting.CardDAV.addressBookUrl
-      });
+      setSavedCredentials(credentials);
+      setCarddavSettings(formFromSaved(carddavSettings.addressBookUrl, credentials));
       setSyncEnabled(true);
       setWarning('');
       await setSettings(updateSetting);
@@ -60,6 +79,15 @@ export function SynchronizationSettings() {
       setWarning(`failed to enable connection! ${err?.message || err || 'Unknown error'}.`);
     }
   };
+
+  const forgetSaved = async () => {
+    setSavedCredentials({ ...savedCredentials, authKey: '' });
+    await updateSetting('CardDAV.authKey', '');
+  };
+
+  const connectedAs = savedCredentials.authType === 'apikey'
+    ? 'Connected with API key'
+    : `Connected as ${usernameFromAuthKey(savedCredentials.authKey) || 'anonymous'}`;
 
   const disableSync = async () => {
     setSyncEnabled(false);
@@ -123,7 +151,8 @@ export function SynchronizationSettings() {
             <div className="setting-item-info">
               <div className="setting-item-name">Synchronization</div>
               <div className="setting-item-description">
-                {syncEnabled ? <div className="mod-success">CardDAV sync Enabled</div> : ''}
+                {syncEnabled ? <div className="mod-success">CardDAV sync enabled. {connectedAs}.</div> : ''}
+                {syncEnabled ? <div>Disable sync to change the connection settings.</div> : ''}
                 <div className="mod-warning">{warning}</div>
               </div>
             </div>
@@ -158,6 +187,9 @@ export function SynchronizationSettings() {
             <CarddavSettings
               carddavSettings={carddavSettings}
               setCarddavSettings={setCarddavSettings}
+              savedAuthType={hasStoredCredentials(savedCredentials) ? savedCredentials.authType : undefined}
+              locked={syncEnabled}
+              onForgetSaved={forgetSaved}
             />
           )}
         </>

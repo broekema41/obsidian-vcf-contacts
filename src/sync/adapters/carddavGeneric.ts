@@ -1,33 +1,21 @@
 import { getSettings } from "src/context/sharedSettingsContext";
+import { authorizationHeader, StoredCredentials } from "src/settings/carddavCredentials";
 import { ContactsPluginSettings } from "src/settings/settings";
 import { VCardMeta, VCardRaw } from "src/sync/adapters/adapter";
 import { AdapterInterface } from "src/sync/adapters/adapterInterface";
-import { CarddavSettingsInterface } from "src/ui/settings/components/carddavSettings";
 import { AppHttpResponse, PlatformHttpClient } from "src/util/platformHttpClient";
 import { fnOutOfString, uidOutOfString } from "src/util/vcard";
 
 
 export function carddavGenericAdapter(): AdapterInterface {
 
-  const getAuthHeader = (settings:ContactsPluginSettings) => {
-    if (settings.CardDAV.authType === 'apikey') {
-      return `Bearer ${settings.CardDAV.authKey}`;
-    } else {
-      return `Basic ${settings.CardDAV.authKey}`;
-    }
-  }
+  const getAuthHeader = (settings:ContactsPluginSettings) => authorizationHeader(settings.CardDAV);
 
-  const checkConnectivity = async (settings: CarddavSettingsInterface): Promise<AppHttpResponse> =>  {
-    const headers = { Authorization : ''};
-    if (settings.authKey) {
-      headers.Authorization = `Bearer ${settings.authKey}`;
-    } else {
-      headers.Authorization = 'Basic ' + btoa(settings.username + ":" + settings.password);
-    }
+  const checkConnectivity = async (addressBookUrl: string, credentials: StoredCredentials): Promise<AppHttpResponse> =>  {
     return await PlatformHttpClient.request({
-        url: settings.addressBookUrl,
+        url: addressBookUrl,
         method: 'OPTIONS',
-        headers,
+        headers: { Authorization: authorizationHeader(credentials) },
       });
   }
 
