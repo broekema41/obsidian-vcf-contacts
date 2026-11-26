@@ -53,7 +53,7 @@ export async function updateSetting(path: string, value: string | boolean | stri
   if (!(lastKey in target)) {
     throw new Error(`Invalid settings path: ${path} (missing final key "${lastKey}")`);
   }
-
+  
   target[lastKey] = value;
   await setSettings(updated);
 }

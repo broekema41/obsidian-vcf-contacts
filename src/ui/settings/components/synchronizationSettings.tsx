@@ -90,14 +90,21 @@ export function SynchronizationSettings() {
     : `Connected as ${usernameFromAuthKey(savedCredentials.authKey) || 'anonymous'}`;
 
   const disableSync = async () => {
+    await updateSetting('syncEnabled', false);
+    await updateSetting('syncSelected', 'None');
     setSyncEnabled(false);
     setSyncSelected('None');
-    await updateSetting('syncEnabled', false)
   }
 
-  React.useEffect(() => {
-    updateSetting('syncSelected', syncSelected)
-  }, [syncSelected]);
+  const changeSyncMethod = async (method: SyncSelected) => {
+    const currentSetting = getSettings();
+    if (method === 'None' && currentSetting.syncEnabled) {
+      await disableSync();
+    } else {
+      await updateSetting('syncSelected', method);
+      setSyncSelected(method);
+    }
+  };
 
   React.useEffect(() => {
     if(isDisabled) {
@@ -174,9 +181,9 @@ export function SynchronizationSettings() {
                 className="dropdown"
                 value={syncSelected}
                 onChange={e => {
-                  disableSync();
-                  setSyncSelected(e.target.value as SyncSelected);
-                }}>
+                  void changeSyncMethod(e.target.value as SyncSelected);
+                }}
+                >
                 <option value="None">No synchronization</option>
                 <option value="CardDAV">CardDAV address book</option>
               </select>
